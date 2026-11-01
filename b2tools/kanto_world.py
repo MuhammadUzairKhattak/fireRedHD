@@ -339,12 +339,50 @@ def package(out_dir=None, plan_dir=PLAN_DIR):
     return 0
 
 
+def convert_nsbmd(out_dir=None, plan_dir=None):
+    """Turn every packaged Kanto cell's terrain.dae into the terrain.nsbmd the ROM chunk-packer (patches/kanto_world.py's
+    _chunk/_terrain, shared with Hoenn's patches/hoenn_world.py) reads: one CTRMapV ToNsbmd batch over the cells, with
+    Black 2's own palettes (world.write_palettes). This is the same step b2tools/rebuild_slice.sh / agent_build.sh run for
+    Hoenn (java -cp work/java:tools/CTRMap.jar:...ToNsbmd --batch), reused unchanged for Kanto content. WSL-only (needs
+    `import world` for the palettes, and the compiled ToNsbmd + CTRMap jars under work/java, tools/)."""
+    import subprocess
+    world = _import_world()
+    if world is None:
+        return 2
+    cells = out_dir or os.path.join(OUT_DIR, 'cells')
+    dirs = sorted(os.path.join(cells, d) for d in os.listdir(cells)
+                  if os.path.exists(os.path.join(cells, d, 'terrain.dae')))
+    if not dirs:
+        print(f'convert_nsbmd: no terrain.dae under {cells} (run --world first)', file=sys.stderr)
+        return 1
+    pal = os.path.join(OUT_DIR, 'palettes.txt')
+    os.makedirs(OUT_DIR, exist_ok=True)
+    world.write_palettes(pal)
+    batch = os.path.join(OUT_DIR, 'batch.txt')
+    with open(batch, 'w', encoding='utf-8') as fh:
+        for d in dirs:
+            dae = os.path.join(d, 'terrain.dae')
+            fh.write(f'{dae} {dae[:-4]}.nsbmd\n')
+    cp = ':'.join(os.path.join(ROOT, p) for p in
+                  ('work/java', 'tools/CTRMap.jar', 'tools/ctrmap-plugins/CTRMapV-1.4.1.jar'))
+    r = subprocess.run(['java', '-Djava.awt.headless=true', '-cp', cp, 'ToNsbmd', '--batch', batch, pal],
+                       capture_output=True, text=True)
+    if r.returncode:
+        print(f'ToNsbmd failed (rc {r.returncode}):\n{r.stdout[-1000:]}\n{r.stderr[-1000:]}', file=sys.stderr)
+        return 1
+    made = sum(os.path.exists(os.path.join(d, 'terrain.nsbmd')) for d in dirs)
+    print(f'convert_nsbmd: {made}/{len(dirs)} Kanto cell(s) terrain.dae -> terrain.nsbmd -> {cells}')
+    return 0 if made == len(dirs) else 1
+
+
 def main(argv=None):
     argv = argv if argv is not None else sys.argv[1:]
     if '--cells' in argv:
         return build_cells()
     if '--dae' in argv:
         return write_cells()
+    if '--nsbmd' in argv:
+        return convert_nsbmd()
     if '--world' in argv:
         return package()
     return build(check='--check' in argv)

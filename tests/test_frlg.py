@@ -242,6 +242,48 @@ class KantoBuildCellTest(unittest.TestCase):
             self.assertTrue(z['place'] and z['kind'] in ('town', 'route'))
         self.assertTrue(any(len(z['maps']) == 1 for z in zones.values()))
 
+    def test_package_manifest_is_injector_ready(self):
+        """The manifest patches/kanto_world.apply() consumes is a valid injection: the cell chunks are contiguous from
+        first_chunk (the patch appends them on Black 2's own a/0/0/8 count), every cell sits on the WxH matrix grid and
+        names a zone the manifest defines, and the matrix/area match the config's region base."""
+        import json
+        import kanto_world
+        out = os.path.join(self.tmp, 'ready_world')
+        self.assertEqual(kanto_world.package(out_dir=out, plan_dir=self.tmp), 0)
+        man = json.load(open(os.path.join(kanto_world.OUT_DIR, 'world.json')))
+        cfg = kanto_world.load_doc()
+        chunks = sorted(c['chunk'] for c in man['cells'])
+        self.assertEqual(chunks, list(range(cfg['first_chunk'], cfg['first_chunk'] + len(chunks))),
+                         'cell chunks must be contiguous from first_chunk (patch appends on Unova\'s count)')
+        self.assertEqual(man['matrix'], cfg['matrix'])
+        self.assertEqual(man['area'], cfg['area'])
+        W, H = man['width'], man['height']
+        for c in man['cells']:
+            self.assertTrue(0 <= c['cx'] < W and 0 <= c['cz'] < H, f"cell {c['cx']},{c['cz']} off the {W}x{H} matrix")
+            self.assertIn(str(c['zone']), man['zones'])
+
+    def test_region_base_ids_match_black2(self):
+        """data/kanto_world.json's injection ids are FireRedHD's region base, measured off Black 2's build files (read
+        only): the first Kanto chunk and the Kanto matrix equal a/0/0/8's and a/0/0/9's own counts - the exact invariant
+        patches/kanto_world.apply() asserts - and the zone slots Pallet Town / Route 1 take are real, distinct header
+        slots. Needs the pokebw2 build files, so it skips on Windows and when they are absent."""
+        import narcio
+        import zoneheaders
+        import kanto_world
+        files = os.path.join(ROOT, 'external', 'pokebw2', 'build', 'b2_us', 'files')
+        if not os.path.isdir(files):
+            raise unittest.SkipTest(f'Black 2 build files not present: {files}')
+        cfg = kanto_world.load_doc()
+        self.assertEqual(len(narcio.load(files, 8)), cfg['first_chunk'],
+                         'first_chunk must be Black 2\'s a/0/0/8 chunk count (where Kanto appends)')
+        self.assertEqual(len(narcio.load(files, 9)), cfg['matrix'],
+                         'matrix must be Black 2\'s a/0/0/9 matrix count (the Kanto matrix id)')
+        headers, _ = zoneheaders.load(files)
+        slots = [m['zone'] for m in cfg['maps'].values()]
+        self.assertEqual(len(set(slots)), len(slots), 'zone slots must be distinct')
+        for z in slots:
+            self.assertTrue(0 <= z < len(headers), f'zone {z} is not a real header slot (Black 2 has {len(headers)})')
+
 
 if __name__ == '__main__':
     unittest.main()
