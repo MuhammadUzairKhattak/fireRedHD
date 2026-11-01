@@ -21,6 +21,13 @@ class FrlgRepo(Repo):
     """A Gen 3 repository whose tilesets have FRLG-specific identities."""
 
     TILESET_PREFIX = 'frlg:'
+    # pokefirered include/fieldmap.h: the primary tileset keeps 640 metatiles and 640 tiles (not pokeruby's 512),
+    # each metatile attribute is a 32-bit word (fieldmap.c sMetatileAttrMasks) and the palette table gives the
+    # primary 7 slots (0..6) with the secondary in 7..12 (NUM_PALS_IN_PRIMARY).
+    METATILE_BOUNDARY = 640
+    TILE_BOUNDARY = 640
+    PAL_PRIMARY = 7
+    ATTR_DTYPE = '<u4'
 
     def __init__(self, root):
         super().__init__(root)

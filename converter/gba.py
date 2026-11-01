@@ -115,6 +115,13 @@ def world_map_folders():
     return out
 
 class Repo:
+    METATILE_BOUNDARY = 512     # primary tileset metatiles 0..511, secondary 512..1023 (blockdata id field bits 0-9);
+    # FRLG (converter/frlg.py FrlgRepo) keeps the 10-bit id but splits at its 640-metatile primary (NUM_METATILES_IN_PRIMARY,
+    # pokefirered include/fieldmap.h)
+    TILE_BOUNDARY = 512         # 8x8 graphics: primary owns tiles 0..511, secondary 512.. (pokeruby); FRLG splits at 640
+    PAL_PRIMARY = 6             # combined palette table: primary supplies slots 0..PAL_PRIMARY-1, secondary the 6..12 band
+    ATTR_DTYPE = '<u2'          # one 16-bit metatile attribute (pokeruby); FRLG packs each into a 32-bit word
+
     def __init__(self, root, emerald=False):
         self.root = root
         self.emerald = emerald
@@ -219,7 +226,7 @@ class Repo:
             lines = open(f'{d}/palettes/{i:02d}.pal').read().split('\n')[3:19]
             pals.append(np.array([[int(v) for v in l.split()] for l in lines if l.strip()], dtype=np.uint8))
         mt = np.frombuffer(open(f'{d}/metatiles.bin', 'rb').read(), dtype='<u2').reshape(-1, 8)
-        attr = np.frombuffer(open(f'{d}/metatile_attributes.bin', 'rb').read(), dtype='<u2')
+        attr = np.frombuffer(open(f'{d}/metatile_attributes.bin', 'rb').read(), dtype=self.ATTR_DTYPE)
         ts = dict(tiles=tiles, pals=pals, mt=mt, attr=attr)
         self._ts[sym] = ts
         return ts
@@ -276,23 +283,26 @@ class MetatileRenderer:
     def __init__(self, repo, prim, sec):
         self.p = repo.load_tileset(prim)
         self.s = repo.load_tileset(sec)
-        self.pals = self.p['pals'][:6] + self.s['pals'][6:13] + self.p['pals'][13:]
+        self.split = getattr(repo, 'METATILE_BOUNDARY', 512)      # the id a grid value's metatile primary/secondary split
+        self.tile_split = getattr(repo, 'TILE_BOUNDARY', 512)     # the 8x8 graphics primary/secondary split
+        n_pal = getattr(repo, 'PAL_PRIMARY', 6)                   # combined palette table: primary's low slots, secondary's band
+        self.pals = self.p['pals'][:n_pal] + self.s['pals'][n_pal:13] + self.p['pals'][13:]
         self.cache = {}
 
     def behavior(self, m):
-        a = self.p['attr'] if m < 512 else self.s['attr']
-        i = m if m < 512 else m - 512
+        a = self.p['attr'] if m < self.split else self.s['attr']
+        i = m if m < self.split else m - self.split
         return int(a[i] & 0xFF) if i < len(a) else 0
 
     def tile(self, t):
-        return self.p['tiles'][t] if t < 512 else self.s['tiles'][t - 512] if t - 512 < len(self.s['tiles']) else np.zeros((8, 8), np.uint8)
+        return self.p['tiles'][t] if t < self.tile_split else self.s['tiles'][t - self.tile_split] if t - self.tile_split < len(self.s['tiles']) else np.zeros((8, 8), np.uint8)
 
     def render(self, m):
         """Return (16,16,4) RGBA for metatile m (bottom+top layer)."""
         if m in self.cache:
             return self.cache[m]
-        src = self.p['mt'] if m < 512 else self.s['mt']
-        i = m if m < 512 else m - 512
+        src = self.p['mt'] if m < self.split else self.s['mt']
+        i = m if m < self.split else m - self.split
         out = np.zeros((16, 16, 4), np.uint8)
         if i < len(src):
             for layer in range(2):

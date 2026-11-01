@@ -1,0 +1,23 @@
+{
+ "_doc": "Kanto overworld placement for the FireRed/LeafGreen prototype (converter/frlg_plan.py plans -> b2tools/kanto_world.py). Parallel to data/hoenn_world.json + data/hoenn_world_layout.json but carrying only Kanto maps, so Hoenn's world build is untouched. 'layout' is each map's (tile_x, tile_z) on the global tile grid (top-left origin, tiles); placement is derived from the maps' own connections: Route 1 (24x40) sits directly north of Pallet Town (24x20) sharing the same x (Route1.down <-> PalletTown.up, offset 0), so Pallet Town's tile_z equals Route 1's tile_z + 40. 'maps' holds per-map Black 2 settings. margin_cells mirrors world.py's compose() one-cell forest ring.",
+ "_ids_doc": "matrix/area/first_chunk and each map's 'zone' are the ROM-integration ids patches/kanto_world.py writes into the FireRedHD build (a/0/0/9 matrix index, a/0/1/3 area record, the a/0/0/8 chunk the first Kanto cell becomes, and the zone-header slots Pallet Town / Route 1 take). The values here are placeholders that make the manifest well-formed for kanto_world.package(); they are FINALISED against FireRedHD's region base in slice a4.5 (the chunk/zone rebase to Unova's counts). 'buildings'/'signs'/'npcs'/'warps' are per-map model/event tables keyed by destination or script that world.map_events reads; empty here means the overworld builds with terrain + walkability + a fly point but no wired doors/NPCs yet (Kanto interiors and scripts come later).",
+ "margin_cells": 1,
+ "matrix": 0,
+ "area": 2,
+ "first_chunk": 0,
+ "layout": {
+  "Route1": {"tile_x": 0, "tile_z": 0},
+  "PalletTown": {"tile_x": 0, "tile_z": 40}
+ },
+ "maps": {
+  "PalletTown": {"kind": "town", "floor": "town", "place": "Pallet Town", "zone": 450,
+                 "buildings": {}, "signs": {}, "npcs": {}, "warps": {}},
+  "Route1": {"kind": "route", "floor": "route", "place": "Route 1", "zone": 451,
+             "buildings": {}, "signs": {}, "npcs": {}, "warps": {}}
+ },
+ "prototype_maps": ["PalletTown", "Route1"],
+ "open_edges": {
+  "PalletTown": ["down"],
+  "Route1": ["up"]
+ }
+}
