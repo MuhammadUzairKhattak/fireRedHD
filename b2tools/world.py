@@ -2115,7 +2115,13 @@ def feature_texture(name):
     src = name
     if name in ASH_TEX: ts, src = ASH_TEX[name]        # (a snowy stand-in: Black 2's texture of another name)
     elif SEASONS is not None and name in SEASONS.SEASONAL: _, ts, src = SEASONS.SEASONAL[name]   # (its season's art)
-    else: ts = EXTRA_TEX.get(name) or next(f.TEXTURES[name] for f in FEATURES if name in getattr(f, 'TEXTURES', {}))
+    else:
+        ts = EXTRA_TEX.get(name)
+        if ts is None:
+            try:
+                ts = next(f.TEXTURES[name] for f in FEATURES if name in getattr(f, 'TEXTURES', {}))
+            except StopIteration:
+                raise KeyError(f'no Black 2 texture set is registered for terrain texture {name!r}') from None
     if ts not in _tex_cache:
         files = os.path.join(ROOT, 'external', 'pokebw2', 'build', 'b2_us', 'files')
         btx = b2files.map_textures(files, ts) if isinstance(ts, int) else b2files.building_textures(files, int(ts[3:]))

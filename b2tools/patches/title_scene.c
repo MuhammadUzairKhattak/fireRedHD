@@ -65,6 +65,7 @@ typedef struct {
                                   /* loadBGScrToVramByNarcNoReserveNegAlign(arc, file, bg, offset, size, compressed, heap) */
 
 #define REG16(a) (*(volatile u16 *)(a))
+#define REG32(a) (*(volatile u32 *)(a))
 #define REG_VCOUNT    0x04000006
 #define REG_BG2HOFS   0x04000018
 #define REG_BG2VOFS   0x0400001a
@@ -155,12 +156,11 @@ void TitleScene_Draw(TitleScene *s) {
 }
 
 /* replaces TitleG3D_Free (ov162 0x0219d7b0) */
-void TitleScene_Free(TitleScene *s) {
+__attribute__((minsize)) void TitleScene_Free(TitleScene *s) {
     u16 ime = REG16(REG_IME);
     REG16(REG_IME) = 0;
     GFL_TCBRemove(s->tcb);
     REG16(REG_IME) = ime;
     REG16(REG_BLDCNT) = 0;
-    REG16(REG_BG2HOFS) = 0;
-    REG16(REG_BG2VOFS) = 0;
+    REG32(REG_BG2HOFS) = 0;             /* BG2HOFS and the adjacent BG2VOFS */
 }

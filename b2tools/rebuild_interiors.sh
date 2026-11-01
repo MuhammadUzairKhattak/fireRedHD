@@ -6,7 +6,7 @@
 #   zsh b2tools/rebuild_interiors.sh [NAME ...]          (default: all recipes and the truck)
 #   b2tools/preview_interior.py NAME                    renders a room without the emulator
 set -e -o pipefail
-cd ~/Documents/GitHub/HoennB2 && source env.sh
+cd "${0:A:h:h}" && source env.sh
 J=${HOENN_JAVA_DIR:-work/java}           # agents may compile into their own folder
 CP="${J}:tools/CTRMap.jar:tools/ctrmap-plugins/CTRMapV-1.4.1.jar"
 mkdir -p $J && javac -cp "$CP" -d $J b2tools/java/*.java

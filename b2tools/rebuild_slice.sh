@@ -6,7 +6,7 @@
 # HOENN_SAPPHIRE_WORLD_DIR wins), then Emerald's overlays and Emerald's own world from pokeemerald's maps in
 # work/world_emerald (HOENN_WORLD_DIR wins; notes/EMERALD.md "Emerald's world"), and the Emerald ROM in work/rom_emerald.
 set -e -o pipefail
-cd ~/Documents/GitHub/HoennB2 && source env.sh
+cd "${0:A:h:h}" && source env.sh
 python3 b2tools/version.py > /dev/null      # stops on a wrong HOENN_VERSION
 RV=${${HOENN_VERSION:-sapphire}:l}; unset HOENN_VERSION   # the world and the shared generators are Sapphire's
 ROMD=$(HOENN_VERSION=$RV python3 -c "import sys, os; sys.path.insert(0, 'b2tools'); import version; print(os.path.abspath(version.build_dir('work/rom')))")
@@ -19,6 +19,7 @@ mkdir -p $(dirname $WD) && REPORT="$(cd $(dirname $WD) && pwd)/$(basename $WD).r
 export HOENN_WORLD_DIR=$(cd $(dirname $WD) && pwd)/$(basename $WD)
 CP="work/java:tools/CTRMap.jar:tools/ctrmap-plugins/CTRMapV-1.4.1.jar"
 mkdir -p work/java && javac -cp "$CP" -d work/java b2tools/java/*.java   # ToNsbmd (CTRMapV writer)
+python3 b2tools/bootstrap_textures.py > /dev/null
 # building models first (sweep_outdoor 2026-10-11: world.py reads them to decide which building tiles are walkable;
 # built after it, a fresh world used the previous models): every town builder (models_<town>.py -> work/buildings/<town>/*.dae), one ToNsbmd batch per town
 for T in littleroot oldale truck_ext petalburg rustboro dewford slateport mauville verdanturf fallarbor lavaridge fortree lilycove mossdeep pacifidlog routes evergrande standalone; do

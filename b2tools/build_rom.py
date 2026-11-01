@@ -123,9 +123,10 @@ def main(args):
         shutil.rmtree(files, ignore_errors=True)
         shutil.rmtree(os.path.join(OUT, 'code'), ignore_errors=True)
         os.makedirs(OUT, exist_ok=True)
-        subprocess.run(['cp', '-c', '-R', '-L', SRC_FILES, files], check=True)
+        copy_flags = ['-c'] if sys.platform == 'darwin' else ['--reflink=auto']
+        subprocess.run(['cp', *copy_flags, '-R', '-L', SRC_FILES, files], check=True)
         # code binaries (arm9.bin, arm9_ovNNN.bin, ...): patches with apply_code(code_dir) edit this copy
-        subprocess.run(['cp', '-c', '-R', '-L', SRC_BUILD, os.path.join(OUT, 'code')], check=True)
+        subprocess.run(['cp', *copy_flags, '-R', '-L', SRC_BUILD, os.path.join(OUT, 'code')], check=True)
     for name in patches:
         spec = importlib.util.spec_from_file_location(name, os.path.join(HERE, 'patches', f'{name}.py'))
         mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
