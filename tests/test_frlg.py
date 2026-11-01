@@ -316,5 +316,43 @@ class KantoBuildCellTest(unittest.TestCase):
         self.assertTrue(e['warps'], f'entry zone {kd.ENTRY_ZONE} has no warp {kd.ENTRY_WARP} to repurpose')
 
 
+class KantoBuildingGeometryTest(unittest.TestCase):
+    """b2tools/terrain/kanto_features.py is the Kanto-only feature module (appended to world.FEATURES at runtime, never
+    added to Hoenn's data/terrain_modules.json) that extrudes the plan's 'building'/'building_roof' tiles - which no
+    Hoenn module draws - into placeholder box volumes. It uses only build_chunk primitives, so it runs on Windows."""
+
+    @staticmethod
+    def _cell(grid):
+        import build_chunk as bc
+        class Cell:
+            cx = cz = 0
+            X = Z = 0
+        c = Cell()
+        c.bc = bc
+        c.get = lambda tx, tz: grid.get((tx, tz))
+        return c
+
+    def test_building_tiles_extrude_boxes(self):
+        from dae import Model
+        from terrain import kanto_features
+        grid = {(1, 1): ('PalletTown', 'building', False),
+                (1, 2): ('PalletTown', 'building_roof', False),
+                (5, 5): ('PalletTown', 'grass', True)}
+        m = Model('test')
+        kanto_features.draw(m, self._cell(grid))
+        self.assertIn('t02_kabe01', m.tris, 'a building tile drew no wall geometry')
+        # two extruded tiles x five faces x (front + back) x two triangles each
+        self.assertEqual(len(m.tris['t02_kabe01']), 2 * 5 * 2 * 2)
+        # collision defers to build_cell's default, so a (solid) building tile stays a wall
+        self.assertIsNone(kanto_features.collision('building', grid[(1, 1)], self._cell(grid)))
+
+    def test_plain_tiles_draw_nothing(self):
+        from dae import Model
+        from terrain import kanto_features
+        m = Model('test')
+        kanto_features.draw(m, self._cell({(0, 0): ('PalletTown', 'grass', True)}))
+        self.assertNotIn('t02_kabe01', m.tris, 'a grass tile must not gain building geometry')
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -233,6 +233,13 @@ def _import_world():
         if HERE not in sys.path:
             sys.path.insert(0, HERE)
         import world
+        # Kanto-only building geometry: extrude the 'building'/'building_roof' classes no Hoenn module draws into
+        # placeholder boxes (terrain/ground.py already renders fence/prop/water/wall). Appended to world.FEATURES at
+        # runtime so neither b2tools/world.py nor Hoenn's data/terrain_modules.json is edited in place (AGENTS.md:
+        # adapters for Kanto content). build_cell reads the FEATURES global when it runs.
+        from terrain import kanto_features
+        if not any(f is kanto_features for f in world.FEATURES):
+            world.FEATURES = list(world.FEATURES) + [kanto_features]
         return world
     except Exception as e:
         print(f'needs b2tools/world importable (run under WSL, where external/pokebw2 resolves): '
