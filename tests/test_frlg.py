@@ -284,6 +284,37 @@ class KantoBuildCellTest(unittest.TestCase):
         for z in slots:
             self.assertTrue(0 <= z < len(headers), f'zone {z} is not a real header slot (Black 2 has {len(headers)})')
 
+    @staticmethod
+    def _load_patch(name):
+        import importlib.util
+        p = os.path.join(ROOT, 'b2tools', 'patches', f'{name}.py')
+        spec = importlib.util.spec_from_file_location(name, p)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    def test_kanto_door_bridge_preconditions(self):
+        """patches/kanto_door.py (the a4.6 reachability bridge) rewires an entry door into Pallet Town's zone slot.
+        Its preconditions, read off Black 2's build files (no write): the Kanto zone is one data/kanto_world.json
+        installs, it differs from the entry zone, and the entry zone has a warp to repurpose. Skips with the class."""
+        import narcio
+        import zoneheaders
+        from zones import parse_entities
+        import kanto_world
+        files = os.path.join(ROOT, 'external', 'pokebw2', 'build', 'b2_us', 'files')
+        if not os.path.isdir(files):
+            raise unittest.SkipTest(f'Black 2 build files not present: {files}')
+        kd = self._load_patch('kanto_door')
+        cfg = kanto_world.load_doc()
+        self.assertNotEqual(kd.KANTO_ZONE, kd.ENTRY_ZONE, 'entry and destination zones must differ')
+        self.assertIn(kd.KANTO_ZONE, {m['zone'] for m in cfg['maps'].values()},
+                      'the bridge leads to a zone the Kanto world does not install')
+        headers, _ = zoneheaders.load(files)
+        ents = narcio.load(files, 126)
+        self.assertTrue(0 <= kd.ENTRY_ZONE < len(headers), 'entry zone is not a real header slot')
+        e, _ = parse_entities(ents[headers[kd.ENTRY_ZONE]['entities']])
+        self.assertTrue(e['warps'], f'entry zone {kd.ENTRY_ZONE} has no warp {kd.ENTRY_WARP} to repurpose')
+
 
 if __name__ == '__main__':
     unittest.main()
