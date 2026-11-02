@@ -275,6 +275,20 @@ class KantoWorldTest(unittest.TestCase):
             plan = json.load(open(os.path.join(self.tmp, f'{name}.json')))
             self.assertFalse(plan['unclassified'], f'{name} has unclassified metatiles: run frlg_classify.py')
 
+    def test_warp_tiles_are_never_invisible_doors(self):
+        """A FireRed warp event tile must never keep a solid-looking class in the plan: Route 2's south forest gate
+        was a labelled 'building' tile the game made walkable, so the flat build drew a box the player clipped into
+        with no door to see. frlg_plan reclassifies warp tiles off building/building_roof/unknown/blocked to 'door'
+        (the walkable class kanto_features draws with an opening)."""
+        import json
+        for name in load_config()['prototype_maps']:
+            plan = json.load(open(os.path.join(self.tmp, f'{name}.json')))
+            for w in plan['warps']:
+                cls = plan['tiles'][w['y']][w['x']]
+                self.assertNotIn(cls, ('building', 'building_roof', 'unknown', 'blocked'),
+                                 f'{name} warp {w["id"]} at ({w["x"]},{w["y"]}): a walkable door drawn as a '
+                                 f'{cls!r} box (the "no visible entrance, clips into the building" defect)')
+
     def test_route2_and_route22_have_content(self):
         """Route 2 (the long forested route north of Viridian) and Route 22 (west) must actually carry terrain:
         Route 2 a dense tree border, both a detected building - guards against a map that plans but composes empty."""
@@ -464,6 +478,19 @@ class KantoBuildCellTest(unittest.TestCase):
         for zid in wired:
             for d in man['zones'][zid]['doors']:
                 self.assertIn(str(d['dest_zone']), man['zones'])
+        # Black 2 reads ONE zone per 32x32 matrix cell (no Kanto ZoneLookup banner patch), so a warp only lands
+        # cleanly if the cell under its landing tile belongs to the destination zone - the entrance-room black
+        # screen. package() hands every landing cell to the destination zone; prove the manifest agrees.
+        cellzone = {(c['cx'], c['cz']): c['zone'] for c in man['cells']}
+        for zid in sorted(wired, key=int):
+            for d in man['zones'][zid]['doors']:
+                dd = man['zones'][str(d['dest_zone'])]['doors'][d['dest_warp']]
+                c = ((dd['x'] - 8) // 16 // 32, (dd['z'] - 8) // 16 // 32)
+                self.assertEqual(cellzone.get(c), d['dest_zone'],
+                                 f'zone {zid} door {d["id"]} lands in cell {c}, which the matrix gives to '
+                                 f'{cellzone.get(c)} not {d["dest_zone"]} (the warp-load black screen)')
+            self.assertIn(int(zid), set(cellzone.values()),
+                          f'zone {zid} owns no matrix cell at all: nothing loads around its warps')
 
     def test_package_places_black2_building_models(self):
         """data/kanto_world.json 'buildings' names a Black 2 native model per footprint; package() must place it (a cell

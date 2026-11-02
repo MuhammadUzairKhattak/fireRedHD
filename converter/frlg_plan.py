@@ -113,6 +113,15 @@ def plan_map(repo, table, name):
     BUILDING = ('blocked', 'building', 'door', 'building_roof')
     is_bld = lambda x, y: solid[y][x] and cls[y][x] in BUILDING
     warps = mj.get('warp_events', [])
+    # a warp event's own tile must never keep a solid-class LOOK while its behaviour makes it walkable: Route 2's south
+    # Viridian Forest gate sits on labelled 'building' metatiles the player walked straight through (the reported "no
+    # visible entrance, character clips into the building"), because the flat build drew a box you can stand inside.
+    # 'door' is the walkable class kanto_features draws with an opening, so reclassify exactly the warp tiles that fell
+    # to a building/undrawn class; tiles FireRed already labels 'door' (the north gate) and open ground stay as they are.
+    for w in warps:
+        if 0 <= w['y'] < H and 0 <= w['x'] < W and cls[w['y']][w['x']] in ('building', 'building_roof', 'unknown', 'blocked'):
+            cls[w['y']][w['x']] = 'door'
+    warp_xy = {(w['x'], w['y']) for w in warps}
     seen, buildings = set(), []
     for y in range(H):
         for x in range(W):
@@ -138,7 +147,10 @@ def plan_map(repo, table, name):
                                              and not solid[y0 - roof - 1][cx] for cx in range(x0, x1 + 1)):
                 roof += 1
             for cx, cy in comp:
-                cls[cy][cx] = 'building'
+                # keep the warp tile a 'door' inside the footprint: painting the whole mass 'building' hid the entrance
+                # behind a solid box (the Route 2 south-gate "no visible entrance, clips into the building" report, and
+                # silently every labelled city door too); 'door' is the class kanto_features draws as an opening.
+                cls[cy][cx] = 'door' if (cx, cy) in warp_xy else 'building'
             for ry in range(y0 - roof, y0):
                 for cx in range(x0, x1 + 1):
                     cls[ry][cx] = 'building_roof'

@@ -388,11 +388,26 @@ def package(out_dir=None, plan_dir=PLAN_DIR):
     built, ring = cells_needed(wgrid)
     zone_of_map = {n: doc['maps'][n]['zone'] for n in doc['maps']}
     kind = {n: doc['maps'][n].get('kind', 'route') for n in doc['maps']}
+    # Kanto's discrete dungeon/entrance maps are entered through real warp doors, not seamless edges: resolve them now,
+    # from the full plans (map_events below filters mp['plan'], so read the doors first). Only the warp-only maps that
+    # link to another map in this build get a record; the 59 door-less prototype maps are unaffected.
+    doors_by_zone = kanto_doors(maps, zone_of_map)
     cells = {}
     for c, counts in built.items():                     # a town wins its cell (banner/music/respawn), else most tiles
         towns = {n: k for n, k in counts.items() if kind.get(n) == 'town'}
         pick = towns or counts
         cells[c] = zone_of_map[max(pick, key=pick.get)]
+    # a warp must LAND in a cell the matrix gives its zone: Black 2 reads exactly one zone per 32x32 cell (Kanto runs
+    # no Hoenn sub-cell ZoneLookup banner patch), so arriving at a door whose landing tile sits in a cell a bigger
+    # neighbour won loads the warp's zone while the engine reads another one - the entrance-room black screen (a
+    # 15x12 room loses every cell vote to e.g. Pewter City / SixIsland sharing its cell). Hand every landing cell to
+    # the destination zone before the forest ring borrows neighbours, so the whole chain agrees with the warp records.
+    for zid in sorted(doors_by_zone):
+        for d in doors_by_zone[zid]:
+            dd = doors_by_zone[d['dest_zone']][d['dest_warp']]
+            c = ((dd['x'] - 8) // 16 // 32, (dd['z'] - 8) // 16 // 32)
+            if c in cells and cells[c] != d['dest_zone']:
+                cells[c] = d['dest_zone']
     for c, nbrs in ring.items():                        # the forest ring borrows a neighbour's zone
         best = max(nbrs, key=lambda n: sum(built[n].values()))
         cells[c] = cells[best]
@@ -406,10 +421,6 @@ def package(out_dir=None, plan_dir=PLAN_DIR):
     hgt = lambda wx, wz: 0                              # flat (single-elevation prototypes; see the a4.3 decision)
     placements = {c: [] for c in order}
     put = world.make_put(placements)
-    # Kanto's discrete dungeon/entrance maps are entered through real warp doors, not seamless edges: resolve them now,
-    # from the full plans (map_events below filters mp['plan'], so read the doors first). Only the warp-only maps that
-    # link to another map in this build get a record; the 59 door-less prototype maps are unaffected.
-    doors_by_zone = kanto_doors(maps, zone_of_map)
     zones = {}
     for name, mp in maps.items():
         # Kanto outdoor doors are not wired yet (each map cfg leaves 'warps' empty), so only hand world.map_events the
