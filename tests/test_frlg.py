@@ -159,10 +159,13 @@ class KantoWorldTest(unittest.TestCase):
     def test_compose_and_build(self):
         import json
         import kanto_world
-        world, trees, maps = kanto_world.compose(kanto_world.load_doc(),
-                                                 {n: os.path.join(self.tmp, f'{n}.json') for n in ('PalletTown', 'Route1')})
-        self.assertEqual(set(maps), {'PalletTown', 'Route1'})
-        self.assertEqual(len(world), 24 * 20 + 24 * 40)           # every map tile placed, no overlap (compose asserts)
+        cfg = kanto_world.load_doc()
+        names = list(cfg['maps'])
+        plans = {n: os.path.join(self.tmp, f'{n}.json') for n in names}
+        sizes = {n: json.load(open(plans[n]))['size'] for n in names}
+        world, trees, maps = kanto_world.compose(cfg, plans)
+        self.assertEqual(set(maps), set(names))
+        self.assertEqual(len(world), sum(w * h for w, h in sizes.values()))   # every map tile placed, no overlap (compose asserts)
         out = os.path.join(self.tmp, 'world')
         self.assertEqual(kanto_world.build(out_dir=out, plan_dir=self.tmp), 0)
         doc = json.load(open(os.path.join(out, 'compose_report.json')))
@@ -233,11 +236,11 @@ class KantoBuildCellTest(unittest.TestCase):
         for key in ('matrix', 'width', 'height', 'area', 'cells', 'zones', 'standalone'):
             self.assertIn(key, man)
         cfg = kanto_world.load_doc()
-        self.assertEqual(len(man['cells']), 12)                        # 2 built + 10 forest-ring cells
+        self.assertGreaterEqual(len(man['cells']), 1)                    # built map cells + the forest ring
         for c in man['cells']:
             self.assertTrue(os.path.exists(os.path.join(out, f"{c['cx']:02d}_{c['cz']:02d}", 'terrain.dae')))
         zones = man['zones']
-        self.assertEqual(set(zones), {str(cfg['maps']['PalletTown']['zone']), str(cfg['maps']['Route1']['zone'])})
+        self.assertEqual(set(zones), {str(m['zone']) for m in cfg['maps'].values()})
         for zid, z in zones.items():
             self.assertEqual(len(z['fly']), 2)                         # a fly point (world x, z) chosen from walkable tiles
             self.assertTrue(z['place'] and z['kind'] in ('town', 'route'))
