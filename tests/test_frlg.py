@@ -465,5 +465,38 @@ class KantoBuildListTest(unittest.TestCase):
             self.assertIn(patch, line, f'{patch} is not enabled in the Kanto build list')
 
 
+class KantoMusicFrlgReaderTest(unittest.TestCase):
+    """b2tools/m4a_frlg.py is the FireRed side of the a5.4 soundtrack port: it reuses m4a.py's M4A engine parsing but
+    finds the song table and reads songs straight from the user's FireRed dump (roms/firered_rev1_original.gba, which
+    is gitignored). It touches no Black 2 ROM build, so it runs wherever the dump is present and skips otherwise."""
+
+    DUMP = os.path.join(ROOT, 'roms', 'firered_rev1_original.gba')
+    PFIR = os.path.join(ROOT, 'external', 'pokefirered')
+
+    @classmethod
+    def setUpClass(cls):
+        if os.path.join(ROOT, 'b2tools') not in sys.path:
+            sys.path.insert(0, os.path.join(ROOT, 'b2tools'))
+        if not os.path.exists(cls.DUMP):
+            raise unittest.SkipTest(f'FireRed dump not present: {cls.DUMP}')
+        if not os.path.isdir(cls.PFIR):
+            raise unittest.SkipTest('external/pokefirered is not installed')
+        import m4a_frlg
+        cls.m = m4a_frlg
+        cls.rom = m4a_frlg.FrlgRom()
+
+    def test_song_table_resolves(self):
+        self.assertEqual(len(self.rom.song_names), 347, 'pokefirered song_table.inc should list 347 songs')
+        self.assertTrue(0x08000000 <= self.rom.song_table < 0x0A000000, 'song table pointer out of ROM range')
+
+    def test_kanto_songs_parse(self):
+        # the songs the Kanto prototype's two maps and the title play parse into looping tracks with notes
+        for song in ('mus_pallet', 'mus_route1', 'mus_title'):
+            self.assertIn(song, self.rom.song_names, f'{song} is not in the FireRed song table')
+            h, tracks = self.m.dump(song, self.rom)
+            self.assertGreater(h['tracks'], 0, f'{song}: no tracks')
+            self.assertTrue(any(t.loop_tick is not None for t in tracks), f'{song}: nothing loops (a field song must)')
+
+
 if __name__ == '__main__':
     unittest.main()
