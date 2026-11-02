@@ -17,5 +17,14 @@
     "sd90_classical_detuned_ep1_high": { "program": 3 },
     "sd90_classical_whistle": { "program": 47 }
   },
+  "slots": {
+    "mus_pallet": "SEQ_BGM_PW_FILMING",
+    "mus_route1": "SEQ_BGM_PW_SCENARIO_01_F",
+    "mus_title": "SEQ_BGM_MSL_01"
+  },
+  "zones": {
+    "450": "mus_pallet",
+    "451": "mus_route1"
+  },
   "songs": {}
 }

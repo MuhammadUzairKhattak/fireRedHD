@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import tempfile
@@ -454,8 +455,8 @@ class KantoBuildListTest(unittest.TestCase):
     b2tools/kanto_build.sh, never editing the Hoenn path. This guards that the shipped slices stay wired into the
     Kanto build (a pure text read, so it runs on Windows)."""
 
-    # the QoL engine slices implemented so far (a5.2 escape_rope/exp_share, a5.3 kanto_trade_evos)
-    ENABLED = ('kanto_world', 'kanto_door', 'kanto_escape_rope', 'exp_share', 'kanto_trade_evos')
+    # the QoL engine slices implemented so far (a5.2 escape_rope/exp_share, a5.3 kanto_trade_evos, a5.4 kanto_music)
+    ENABLED = ('kanto_world', 'kanto_door', 'kanto_escape_rope', 'exp_share', 'kanto_trade_evos', 'kanto_music')
 
     def test_qol_patches_are_in_the_kanto_build_list(self):
         script = open(os.path.join(ROOT, 'b2tools', 'kanto_build.sh')).read()
@@ -463,6 +464,34 @@ class KantoBuildListTest(unittest.TestCase):
         self.assertIsNotNone(line, 'kanto_build.sh has no build_rom.py invocation')
         for patch in self.ENABLED:
             self.assertIn(patch, line, f'{patch} is not enabled in the Kanto build list')
+
+
+class KantoMusicDataTest(unittest.TestCase):
+    """data/kanto_music.json must be sound before it is installed: every song slot is a Black 2 sequence the
+    music pool proved free (data/hoenn_music.json 'pool.bgm_slots'), every zone points at a song that has a slot, and
+    every FireRed-only instrument name maps to a program the Hoenn calibration actually measured. Pure JSON reads, so
+    it runs on Windows (the install itself is covered by KantoMusicConvertTest under WSL)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.k = json.load(open(os.path.join(ROOT, 'data', 'kanto_music.json')))
+        cls.h = json.load(open(os.path.join(ROOT, 'data', 'hoenn_music.json')))
+        cls.lv = json.load(open(os.path.join(ROOT, 'data', 'hoenn_music_levels.json')))
+
+    def test_slots_come_from_the_free_pool(self):
+        pool = set(self.h['pool']['bgm_slots'])
+        for song, slot in self.k['slots'].items():
+            self.assertIn(slot, pool, f'{song} -> {slot} is not a proven-free Black 2 BGM slot')
+        self.assertEqual(len(set(self.k['slots'].values())), len(self.k['slots']), 'two songs share a slot')
+
+    def test_zones_reference_mapped_songs(self):
+        for zid, song in self.k['zones'].items():
+            self.assertIn(song, self.k['slots'], f'zone {zid} plays {song}, which has no slot')
+
+    def test_defaults_use_measured_programs(self):
+        measured = {int(x) for x in self.lv['programs']}
+        for name, d in self.k['defaults'].items():
+            self.assertIn(d['program'], measured, f'{name} -> program {d["program"]} is not in the measured library')
 
 
 class KantoMusicFrlgReaderTest(unittest.TestCase):

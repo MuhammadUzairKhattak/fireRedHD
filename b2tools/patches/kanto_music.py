@@ -23,6 +23,7 @@ ROOT = os.path.dirname(B2T)
 sys.path.insert(0, B2T)
 
 KANTO_JSON = os.path.join(ROOT, 'data', 'kanto_music.json')
+SDAT_NAME = 'swan_sound_data.sdat'
 
 # the songs the Kanto prototype plays today: Pallet Town (zone 450), Route 1 (zone 451) and the title screen.
 # (pokefirered data/maps/<map>/map.json "music", lower-cased - the same rule hoenn_music.map_song uses for Hoenn.)
@@ -38,7 +39,11 @@ def mapping():
     for song, cfg in k.get('songs', {}).items():
         mp.setdefault('songs', {}).setdefault(song, {}).update(cfg)
     if 'slots' in k:
-        mp.setdefault('slots', {}).update(k['slots'])
+        # Kanto-only: this build installs no Hoenn songs, so the slots table is just FireRed's (Hoenn's ~120 song->slot
+        # rows would make convert_all try to read songs the FireRed dump has no table entry for).
+        mp['slots'] = dict(k['slots'])
+    if 'zones' in k:
+        mp['zones'] = dict(k['zones'])            # Kanto zone id -> song, so apply() can set each header's map BGM
     return mp
 
 
@@ -59,6 +64,39 @@ def convert_all(songs=None, mp=None):
         out[song] = (q, b, w, sg.info_volume)
         sizes.append(sg.size)
     return out, sum(sizes)
+
+
+def apply(files):
+    """Install the songs the Kanto zones play into their Black 2 slots and point those zones' map BGM at them. Data
+    only, no boot code: the overworld engine already plays a zone header's bgm0/bgm1 (day/night), so writing the FireRed
+    slot's sequence id there is enough - no bgm2 field and no ITCM redirect (which is what Hoenn's apply_code adds to
+    keep Unova's day/night switching). Runs after kanto_world in the build list, so zones 450/451 already exist."""
+    import zoneheaders
+    from sdat import SDAT
+    import hoenn_music                                  # install_all: the version-neutral sdat writer
+    mp = mapping()
+    path = os.path.join(files, SDAT_NAME)
+    data = open(path, 'rb').read()
+    play = list(dict.fromkeys(mp['zones'].values()))    # only songs a zone actually plays
+    songs, _ = convert_all(play, mp=mp)
+    new, used, room = hoenn_music.install_all(data, songs, mp)
+    if os.path.islink(path):
+        os.unlink(path)
+    open(path + '.tmp', 'wb').write(new)
+    os.replace(path + '.tmp', path)
+    s2 = SDAT(new)
+    headers, hentries = zoneheaders.load(files)
+    done = []
+    for zid, song in sorted(mp['zones'].items(), key=lambda x: int(x[0])):
+        slot = mp['slots'][song]
+        seqid = s2.index('seq', slot)
+        h = headers[int(zid)]
+        was = (h['bgm0'], h['bgm1'])
+        h['bgm0'] = h['bgm1'] = seqid                    # day and night: the same FireRed song (no Unova switch-back)
+        headers[int(zid)] = h
+        done.append(f'zone {zid} {song} -> seq {seqid} ({slot}); was bgm {was}')
+    zoneheaders.save(files, headers, hentries)
+    return f'kanto music: installed {len(songs)} FireRed song(s) ({used:,} of {room:,} B pool); ' + '; '.join(done)
 
 
 def main(_argv):
