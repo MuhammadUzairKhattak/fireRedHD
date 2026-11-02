@@ -109,6 +109,31 @@ class FrlgClassificationTest(unittest.TestCase):
         self.assertEqual(r1['buildings'], [])
         self.assertIn('tall_grass', {t for row in r1['tiles'] for t in row})
 
+    def test_no_solid_tile_is_invisible(self):
+        """world.py's rule: a solid (non-walkable) tile must be drawn by some module, or it is an invisible wall the
+        player bumps into (this is what made the Kanto signs and door gaps invisible). Every class a prototype plan
+        marks solid must have a geometry owner. DRAWN mirrors the terrain modules' CLASSES plus world.build_cell's core
+        classes and terrain/kanto_features.py; when a new solid class appears with no owner here, either draw it (a
+        module) or reclassify it - never leave it invisible. Pure-python (frlg_plan only), so it runs on Windows."""
+        import frlg_plan
+        GROUND = {'sand', 'ash_grass', 'long_grass', 'bike_path', 'bridge', 'fence', 'wall', 'bush', 'rock', 'prop'}
+        HEIGHTS = {'cliff', 'cliff_top', 'stairs', 'ledge_e', 'ledge_w', 'ledge_n', 'ledge_s', 'ledge_cap',
+                   'mountain', 'cave_entrance', 'cracked_floor', 'mud'}
+        WATER = {'water', 'deep_water', 'current_n', 'current_s', 'current_e', 'current_w', 'waterfall', 'puddle', 'water_edge'}
+        CORE = {'grass', 'path', 'tall_grass', 'flowers', 'lava', 'sand_patch', 'tree',
+                'tree_top_l', 'tree_top_r', 'tree_bot', 'tree_tip'}
+        KANTO = {'building', 'building_roof', 'door', 'sign'}
+        drawn = GROUND | HEIGHTS | WATER | CORE | KANTO
+        repo = FrlgRepo(os.path.abspath(self.repo_root))
+        table = frlg_plan.load_table()
+        for name in load_config()['prototype_maps']:
+            plan = frlg_plan.plan_map(repo, table, name)
+            for y in range(plan['size'][1]):
+                for cls, walk in zip(plan['tiles'][y], plan['walkable'][y]):
+                    if not walk:
+                        self.assertTrue(cls in drawn or cls.startswith('other:'),
+                                        f'{name}: solid tile class {cls!r} has no geometry owner (invisible wall)')
+
 
 class KantoWorldTest(unittest.TestCase):
     """b2tools/kanto_world.py lays the clean Kanto plans onto one global grid (the build step parallel to
@@ -322,8 +347,9 @@ class KantoBuildCellTest(unittest.TestCase):
 
 class KantoBuildingGeometryTest(unittest.TestCase):
     """b2tools/terrain/kanto_features.py is the Kanto-only feature module (appended to world.FEATURES at runtime, never
-    added to Hoenn's data/terrain_modules.json) that extrudes the plan's 'building'/'building_roof' tiles - which no
-    Hoenn module draws - into placeholder box volumes. It uses only build_chunk primitives, so it runs on Windows."""
+    added to Hoenn's data/terrain_modules.json) that draws the plan's 'building'/'building_roof'/'door' tiles as one
+    merged massing per footprint and gives solid 'sign' tiles a visible signpost - none of which a Hoenn module draws.
+    It uses only build_chunk primitives, so it runs on Windows."""
 
     @staticmethod
     def _cell(grid):
@@ -336,7 +362,7 @@ class KantoBuildingGeometryTest(unittest.TestCase):
         c.get = lambda tx, tz: grid.get((tx, tz))
         return c
 
-    def test_building_tiles_extrude_boxes(self):
+    def test_footprint_merges_interior_seams(self):
         from dae import Model
         from terrain import kanto_features
         grid = {(1, 1): ('PalletTown', 'building', False),
@@ -344,18 +370,36 @@ class KantoBuildingGeometryTest(unittest.TestCase):
                 (5, 5): ('PalletTown', 'grass', True)}
         m = Model('test')
         kanto_features.draw(m, self._cell(grid))
-        self.assertIn('t02_kabe01', m.tris, 'a building tile drew no wall geometry')
-        # two extruded tiles x five faces x (front + back) x two triangles each
-        self.assertEqual(len(m.tris['t02_kabe01']), 2 * 5 * 2 * 2)
+        # a two-tile footprint shares one edge: walls go on the 6 outer faces only (not 8), each double-sided (2 quads
+        # x 2 tris = 4 tris/face); the roof slab (top + 6 parapet faces) is a distinct stone material.
+        self.assertEqual(len(m.tris['t02_kabe01']), 6 * 4,
+                         'interior seam: adjacent building tiles must not both wall the shared edge')
+        self.assertIn('iwa01', m.tris, 'the massing drew no roof slab')
         # collision defers to build_cell's default, so a (solid) building tile stays a wall
         self.assertIsNone(kanto_features.collision('building', grid[(1, 1)], self._cell(grid)))
+
+    def test_door_tile_fills_the_footprint(self):
+        from dae import Model
+        from terrain import kanto_features
+        m = Model('test')
+        kanto_features.draw(m, self._cell({(3, 3): ('ViridianCity', 'door', False)}))
+        self.assertIn('t02_kabe01', m.tris, 'a door tile left a hole in the building instead of closing it')
+
+    def test_sign_draws_a_visible_signpost(self):
+        from dae import Model
+        from terrain import kanto_features
+        grid = {(4, 4): ('ViridianCity', 'sign', False)}
+        m = Model('test')
+        kanto_features.draw(m, self._cell(grid))
+        self.assertIn('ki02c', m.tris, 'a solid sign tile rendered as nothing (invisible wall)')
+        self.assertIsNone(kanto_features.collision('sign', grid[(4, 4)], self._cell(grid)))
 
     def test_plain_tiles_draw_nothing(self):
         from dae import Model
         from terrain import kanto_features
         m = Model('test')
         kanto_features.draw(m, self._cell({(0, 0): ('PalletTown', 'grass', True)}))
-        self.assertNotIn('t02_kabe01', m.tris, 'a grass tile must not gain building geometry')
+        self.assertFalse(m.tris, 'a grass tile must not gain building or sign geometry')
 
 
 class KantoEscapeRopeTest(unittest.TestCase):
