@@ -449,5 +449,21 @@ class KantoTradeEvosTest(unittest.TestCase):
         self.assertEqual(trade_evos.entries_of(rec), entries)
 
 
+class KantoBuildListTest(unittest.TestCase):
+    """Phase 1 (a5.x) lands the QoL engine slices by appending patch names to the Kanto build list in
+    b2tools/kanto_build.sh, never editing the Hoenn path. This guards that the shipped slices stay wired into the
+    Kanto build (a pure text read, so it runs on Windows)."""
+
+    # the QoL engine slices implemented so far (a5.2 escape_rope/exp_share, a5.3 kanto_trade_evos)
+    ENABLED = ('kanto_world', 'kanto_door', 'kanto_escape_rope', 'exp_share', 'kanto_trade_evos')
+
+    def test_qol_patches_are_in_the_kanto_build_list(self):
+        script = open(os.path.join(ROOT, 'b2tools', 'kanto_build.sh')).read()
+        line = next((l for l in script.splitlines() if 'build_rom.py' in l), None)
+        self.assertIsNotNone(line, 'kanto_build.sh has no build_rom.py invocation')
+        for patch in self.ENABLED:
+            self.assertIn(patch, line, f'{patch} is not enabled in the Kanto build list')
+
+
 if __name__ == '__main__':
     unittest.main()
