@@ -168,7 +168,7 @@ def plan_map(repo, table, name):
 
     elev_grid = [[(int(grid[y, x]) >> 12) & 0xF for x in range(W)] for y in range(H)]
     left = {k: v for k, v in unclassified.items() if any(cls[y][x] in ('unknown', 'blocked') for x, y in v)}
-    plan = dict(map=name, size=[W, H], tilesets=[prim, sec],
+    plan = dict(map=name, id=mj['id'], size=[W, H], tilesets=[prim, sec],
                 tiles=[[cls[y][x] for x in range(W)] for y in range(H)],
                 walkable=[[not solid[y][x] for x in range(W)] for y in range(H)],
                 elevation=elev_grid,

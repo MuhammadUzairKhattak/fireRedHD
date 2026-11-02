@@ -293,6 +293,79 @@ def write_cells(out_dir=None, plan_dir=PLAN_DIR, first_chunk=0, zone_base=450):
     return 0
 
 
+def warp_dir(walk, x, y):
+    """The Black 2 warp dir a door tile fires on: the direction you walk INTO the solid door, read from which
+    neighbouring map tile is walkable (you stand there and step toward the door). dir 2 = north (open tile below the
+    door), 1 = south, 4 = west, 3 = east -- the same encoding world.warp_spot uses. Defaults to 2 (a gate entered
+    walking north up a route). `walk` is the plan's map-local walkable grid; (x, y) is the warp tile in it."""
+    def open_at(xx, yy):
+        return 0 <= yy < len(walk) and 0 <= xx < len(walk[0]) and walk[yy][xx]
+    if open_at(x, y + 1):
+        return 2
+    if open_at(x, y - 1):
+        return 1
+    if open_at(x + 1, y):
+        return 4
+    if open_at(x - 1, y):
+        return 3
+    return 2
+
+
+def kanto_doors(maps, zone_of_map):
+    """Resolve Kanto's warp-only discrete maps (a dungeon like Viridian Forest and the little entrance rooms that
+    link it to Route 2) into Black 2 warp records for world.json, in the exact shape patches/kanto_door.py proved
+    loads and warps in the ROM. An outdoor route reaches a *neighbouring* outdoor map through a seamless edge (the
+    map's connections), but a dungeon is a separate map you enter only by walking into a door tile, so every such
+    door needs a real warp record - not an edge.
+
+    Wire every FireRed warp whose destination map is present in this build, resolved by the plan's own source id
+    (mp['plan']['id'], set by converter/frlg_plan.py) rather than a CamelCase guess: compound folder names like
+    Route2_ViridianForest_NorthEntrance keep their underscores, so _plan_name(dest) would never match them. Warps to
+    maps not in this build (a route's Diglett's Cave, a town's shops) are left unwired - the tile stays a plain
+    placeholder, exactly as before, so the 59 door-less prototype maps and the boot path are untouched.
+
+    Each wired warp gets an index within its zone == its position in that zone's slot list (sorted by FireRed warp
+    id, and reserving a slot for every warp another door lands on so its reciprocal index always exists). A door's
+    dest_warp therefore points exactly at the warp the player arrives on, and stepping into *that* warp leads back.
+    Returns {zone_id: [warp record, ...]}; x/z are in 1/16-tile units and y=0 (the flat build, world.HF None).
+    """
+    id_to_map = {mp['plan']['id']: name for name, mp in maps.items() if mp['plan'].get('id')}
+    func = {}          # map -> its wired warps (destination present), sorted by FireRed warp id
+    land = {}          # map -> warp ids some other door lands on (must reserve a slot even if not a door itself)
+    for name, mp in maps.items():
+        ds = [w for w in mp['plan'].get('warps', []) if id_to_map.get(w['dest'])]
+        if ds:
+            func[name] = sorted(ds, key=lambda w: int(w['id']))
+        for w in ds:
+            land.setdefault(id_to_map[w['dest']], set()).add(str(w['dest_warp']))
+    warp_at = {}       # (map, str(warp id)) -> index in that map's zone door list
+    slots = {}         # map -> sorted slot ids (wired doors and their landing targets)
+    for name in set(func) | set(land):
+        ids = sorted({int(w['id']) for w in func.get(name, [])} | {int(i) for i in land.get(name, set())})
+        slots[name] = ids
+        for i, wid in enumerate(ids):
+            warp_at[(name, str(wid))] = i
+    by_zone = {}
+    for name in func:
+        mp = maps[name]
+        ox, oz = mp['ox'], mp['oz']
+        walk = mp['plan']['walkable']
+        by_warp = {str(w['id']): w for w in mp['plan'].get('warps', [])}
+        doors = []
+        for wid in slots[name]:
+            w = by_warp[str(wid)]                     # a slot id is always a real warp on this map
+            dest = id_to_map.get(w['dest'])
+            if dest is not None:                      # wired door: land on the destination's reciprocal warp
+                dzone, didx = zone_of_map[dest], warp_at[(dest, str(w['dest_warp']))]
+            else:                                     # pure landing target: park it on itself so the index stays valid
+                dzone, didx = zone_of_map[name], warp_at[(name, str(wid))]
+            wx, wz = ox + w['x'], oz + w['y']
+            doors.append(dict(dest_zone=dzone, dest_warp=didx, dir=warp_dir(walk, w['x'], w['y']), type=3, rail=0,
+                              x=wx * 16 + 8, y=0, z=wz * 16 + 8, w=1, h=1, unk=0, map=name, id=int(wid)))
+        by_zone[zone_of_map[name]] = doors
+    return by_zone
+
+
 def package(out_dir=None, plan_dir=PLAN_DIR):
     """The functional-wiring pass that turns the composed Kanto maps into the package a ROM patch consumes, reusing
     b2tools/world.py's event/zone machinery UNCHANGED (no Hoenn edit): world.zone_rects (sub-cell zones), world.zone_of,
@@ -333,6 +406,10 @@ def package(out_dir=None, plan_dir=PLAN_DIR):
     hgt = lambda wx, wz: 0                              # flat (single-elevation prototypes; see the a4.3 decision)
     placements = {c: [] for c in order}
     put = world.make_put(placements)
+    # Kanto's discrete dungeon/entrance maps are entered through real warp doors, not seamless edges: resolve them now,
+    # from the full plans (map_events below filters mp['plan'], so read the doors first). Only the warp-only maps that
+    # link to another map in this build get a record; the 59 door-less prototype maps are unaffected.
+    doors_by_zone = kanto_doors(maps, zone_of_map)
     zones = {}
     for name, mp in maps.items():
         # Kanto outdoor doors are not wired yet (each map cfg leaves 'warps' empty), so only hand world.map_events the
@@ -343,6 +420,8 @@ def package(out_dir=None, plan_dir=PLAN_DIR):
         mp['plan'] = dict(mp['plan'], warps=[w for w in mp['plan'].get('warps', [])
                                               if w['dest'] in mp['cfg'].get('warps', {})])
         world.map_events(name, mp, zones, put, hgt, zone_at, wgrid)
+    for zid, doors in doors_by_zone.items():          # attach the resolved doors to their zone for the ROM patch
+        zones.setdefault(zid, world.new_zone())['doors'] = doors
     # a building whose map cfg names a Black 2 model (data/kanto_world.json 'buildings') is drawn by that placed model,
     # not by kanto_features' placeholder massing: mark its footprint + roof tiles so the box is suppressed under it
     # (the tiles stay solid walls; the model is the building, exactly as in Hoenn).

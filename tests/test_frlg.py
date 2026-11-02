@@ -301,6 +301,83 @@ class KantoWorldTest(unittest.TestCase):
         self.assertIn('path', flat, 'Route 22 lost its boardwalk path entirely')
 
 
+class KantoDoorTest(unittest.TestCase):
+    """kanto_world.kanto_doors() turns the FireRed warp tables of the discrete dungeon maps (Viridian Forest + its two
+    Route 2 entrance rooms) into reciprocal Black 2 warp records - the door system the reported 'no entrance into the
+    forest' needs. Pure python over the plans + data/kanto_world.json (no `import world`), so it runs on Windows."""
+
+    CHAIN = ('Route2', 'ViridianForest', 'Route2_ViridianForest_NorthEntrance', 'Route2_ViridianForest_SouthEntrance')
+
+    @classmethod
+    def setUpClass(cls):
+        cls.repo_root = os.path.join(ROOT, 'external', 'pokefirered')
+        if not os.path.isdir(cls.repo_root):
+            raise unittest.SkipTest('external/pokefirered is not installed')
+        import frlg_plan
+        import kanto_world
+        repo = FrlgRepo(cls.repo_root)
+        table = frlg_plan.load_table()
+        cls.tmp = tempfile.mkdtemp()
+        import json
+        for name in load_config()['prototype_maps']:
+            json.dump(frlg_plan.plan_map(repo, table, name), open(os.path.join(cls.tmp, f'{name}.json'), 'w'))
+        cls.doc = kanto_world.load_doc()
+        plans = {n: os.path.join(cls.tmp, f'{n}.json') for n in cls.doc['maps']}
+        _, _, cls.maps = kanto_world.compose(cls.doc, plans)
+        cls.zone_of_map = {n: cls.doc['maps'][n]['zone'] for n in cls.doc['maps']}
+        cls.doors = kanto_world.kanto_doors(cls.maps, cls.zone_of_map)
+
+    def test_only_the_viridian_forest_chain_gets_doors(self):
+        """Exactly the four warp-chain maps emit door zones (18 FireRed warps, all present->present); none of the 59
+        door-less prototype maps - and so no zone the boot path walks through - gains an event record."""
+        self.assertEqual({self.zone_of_map[n] for n in self.CHAIN}, set(self.doors))
+        total = sum(len(d) for d in self.doors.values())
+        self.assertEqual(total, 18, 'the Viridian Forest chain has 18 present->present warps in FireRed')
+        for name, mp in self.maps.items():
+            if name not in self.CHAIN:
+                wired = [w for w in mp['plan'].get('warps', []) if w['dest'] in
+                         {m['plan']['id'] for m in self.maps.values()}]
+                self.assertEqual(wired, [], f'{name}: a non-chain map unexpectedly warps to a built map')
+
+    def test_warp_records_are_reciprocal(self):
+        """Every door at index i of zone Z lands in a wired zone D, and the warp it lands on (D[d['dest_warp]]) leads
+        straight back to Z - onto a door of the same source warp group (FireRed reuses ONE return warp for the several
+        gate tiles of a group, so stepping back out exits at a tile of the same doorway, exactly like FireRed)."""
+        for zid, doors in self.doors.items():
+            for i, d in enumerate(doors):
+                self.assertIn(d['dest_zone'], self.doors, f'zone {zid} door {i} warps into an unwired zone')
+                back = self.doors[d['dest_zone']][d['dest_warp']]
+                self.assertEqual(back['dest_zone'], zid, f'zone {zid} door {i}: return warp is in another zone')
+                origin = doors[back['dest_warp']]
+                self.assertEqual(origin['dest_zone'], d['dest_zone'],
+                                 f'zone {zid} door {i}: return warp exits a different doorway than it entered')
+                self.assertEqual(origin['dest_warp'], d['dest_warp'],
+                                 f'zone {zid} door {i}: back through the exit lands elsewhere than the entered door')
+
+    def test_warp_fields_are_valid(self):
+        """The fields patches/kanto_world.py -> zones.build_entities serialise: dir is one of the four Black 2 warp
+        directions, type 3 (door), y=0 on the flat build, and x/z are tile centres (tile*16+8)."""
+        for zid, doors in self.doors.items():
+            for d in doors:
+                self.assertIn(d['dir'], (1, 2, 3, 4), f'zone {zid} warp {d["id"]}: bad dir {d["dir"]}')
+                self.assertEqual(d['type'], 3, f'zone {zid} warp {d["id"]}: not a door warp')
+                self.assertEqual(d['y'], 0)
+                self.assertEqual(d['x'] % 16, 8)
+                self.assertEqual(d['z'] % 16, 8)
+                self.assertLess(d['dest_warp'], len(self.doors[d['dest_zone']]))
+
+    def test_route2_north_warps_enter_the_forest_side(self):
+        """The two Route 2 gates the player walks into north of Viridian (warp ids 0/1 at the north entrance, 2/9 at
+        the south) must resolve onto the entrance-room zones, so walking into the Route 2 gate doors lands in the map
+        that leads onward to Viridian Forest itself."""
+        rz = self.zone_of_map['Route2']
+        got = {(d['id'], d['dest_zone']) for d in self.doors[rz]}
+        self.assertEqual(got, {(0, self.zone_of_map['Route2_ViridianForest_NorthEntrance']),
+                               (1, self.zone_of_map['Route2_ViridianForest_NorthEntrance']),
+                               (2, self.zone_of_map['Route2_ViridianForest_SouthEntrance']),
+                               (9, self.zone_of_map['Route2_ViridianForest_SouthEntrance'])})
+
+
 class KantoBuildCellTest(unittest.TestCase):
     """kanto_world --cells runs Black 2's real b2tools/world.build_cell over the composed Kanto cells (reused, not
     edited) to prove the plan class vocabulary feeds the Gen 5 geometry builder unchanged. Needs `import world`, which
@@ -370,6 +447,23 @@ class KantoBuildCellTest(unittest.TestCase):
             self.assertEqual(len(z['fly']), 2)                         # a fly point (world x, z) chosen from walkable tiles
             self.assertTrue(z['place'] and z['kind'] in ('town', 'route'))
         self.assertTrue(any(len(z['maps']) == 1 for z in zones.values()))
+
+    def test_package_emits_doors_only_for_the_chain(self):
+        """Integration for the two halves: package() reads the full plans through kanto_doors BEFORE map_events
+        filters them, and the ROM-shaped world.json carries a zone 'doors' list only on the four Viridian Forest
+        chain zones - every other zone dict has no 'doors' key, so patches/kanto_world.py keeps its event set blank
+        byte-for-byte exactly as before."""
+        import json
+        import kanto_world
+        out = os.path.join(self.tmp, 'doors_world')
+        self.assertEqual(kanto_world.package(out_dir=out, plan_dir=self.tmp), 0)
+        man = json.load(open(os.path.join(kanto_world.OUT_DIR, 'world.json')))
+        chain = {str(kanto_world.load_doc()['maps'][n]['zone']) for n in KantoDoorTest.CHAIN}
+        wired = {zid for zid, z in man['zones'].items() if z.get('doors')}
+        self.assertEqual(wired, chain, 'world.json doors must cover exactly the Viridian Forest chain zones')
+        for zid in wired:
+            for d in man['zones'][zid]['doors']:
+                self.assertIn(str(d['dest_zone']), man['zones'])
 
     def test_package_places_black2_building_models(self):
         """data/kanto_world.json 'buildings' names a Black 2 native model per footprint; package() must place it (a cell

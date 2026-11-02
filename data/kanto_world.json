@@ -245,6 +245,18 @@
   "ViridianCity": {
    "tile_x": 48,
    "tile_z": 180
+  },
+  "ViridianForest": {
+   "tile_x": 0,
+   "tile_z": 784
+  },
+  "Route2_ViridianForest_NorthEntrance": {
+   "tile_x": 60,
+   "tile_z": 784
+  },
+  "Route2_ViridianForest_SouthEntrance": {
+   "tile_x": 80,
+   "tile_z": 784
   }
  },
  "maps": {
@@ -858,6 +870,36 @@
      "front": 20
     }
    },
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "ViridianForest": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Viridian Forest",
+   "zone": 510,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route2_ViridianForest_NorthEntrance": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Viridian Forest North Entrance",
+   "zone": 511,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route2_ViridianForest_SouthEntrance": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Viridian Forest South Entrance",
+   "zone": 512,
+   "buildings": {},
    "signs": {},
    "npcs": {},
    "warps": {}

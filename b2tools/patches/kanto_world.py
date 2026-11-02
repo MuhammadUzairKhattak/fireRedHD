@@ -8,9 +8,9 @@ and area with a fly point. Black 2's own matrices, chunks and every other zone a
 
 The chunks reuse hoenn_world._chunk UNCHANGED (the generic 'WB'/'GC' container: terrain.nsbmd through Black 2's
 tree/water material fix, collision layers, placements.bin). Each Kanto zone's event set is written EMPTY (no signs /
-NPCs / warps / triggers): the prototype maps carry no wired doors or people yet (Kanto interiors, encounters, story
-scripts and place-name text are later slices), and clearing the arrays keeps the repurposed Unova slot's own actors
-from standing in the Kanto geometry at wrong positions. The zone header's field/init script numbers and the entity
+NPCs / triggers) except for the warp doors world.json carries under a zone's 'doors' key (see kanto_world.kanto_doors):
+a few discrete maps - a dungeon like Viridian Forest and its Route 2 entrance rooms - are entered through a warp, not a
+seamless edge, so their zones get real Black 2 warp records while every other (door-less) prototype zone stays blank. The zone header's field/init script numbers and the entity
 file's map-script table are copied from Black 2's own Nuvema (town, 389) / Route 1 (route, 317) headers - pristine,
 self-contained Gen 5 scripts that load without touching anything we removed.
 
@@ -78,8 +78,11 @@ def apply(files):
         hd['matrix'], hd['area'] = world['matrix'], world['area']
         hd['fly_x'], hd['fly_y'], hd['fly_z'] = z['fly'][0], 0, z['fly'][1]
         # an empty event set (the repurposed slot's own Unova actors/warps stay out of the Kanto geometry); the zone's
-        # init-script table is kept from the entity file, which the header's (template) init_scripts number drives
-        ents[hd['entities']] = build_entities(dict(signs=[], npcs=[], warps=[], triggers=[]), ents[hd['entities']])
+        # init-script table is kept from the entity file, which the header's (template) init_scripts number drives.
+        # The one exception is world.json's 'doors': Black 2 warp records for a Kanto map you enter through a warp
+        # (a dungeon / entrance room), resolved by kanto_world.kanto_doors. A zone with no doors keeps its event set
+        # blank exactly as before, so the door-less prototype maps and the boot path are byte-for-byte unchanged.
+        ents[hd['entities']] = build_entities(dict(signs=[], npcs=[], warps=z.get('doors', []), triggers=[]), ents[hd['entities']])
         headers[zid] = hd
         done.append(f'zone {zid} ({z.get("kind")} "{z.get("place")}" -> maps {z.get("maps")}): '
                     f'matrix {hd["matrix"]}, area {hd["area"]}, fly [{z["fly"][0]}, {z["fly"][1]}]')
