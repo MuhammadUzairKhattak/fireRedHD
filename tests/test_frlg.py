@@ -200,6 +200,19 @@ class KantoWorldTest(unittest.TestCase):
         self.assertEqual(doc['maps']['PalletTown']['buildings'], ['house', 'house', 'lab'])
         self.assertGreaterEqual(len(doc['cells_built']), 1)
 
+    def test_no_invisible_tree_wall(self):
+        """compose() must never leave a solid tree tile without a tree model over it. FireRed's tree art does not form
+        the clean tree_top_l/tree_top_r pairs the old detector required, so uncovered solid tree tiles (the route
+        borders, cluster edges) were invisible walls; frlg_plan now covers every 2x2 block and compose opens the rest."""
+        import kanto_world
+        cfg = kanto_world.load_doc()
+        plans = {n: os.path.join(self.tmp, f'{n}.json') for n in cfg['maps']}
+        world, trees, maps = kanto_world.compose(cfg, plans)
+        covered = {(x + dx, z + dz) for (x, z) in trees for dx in (0, 1) for dz in (0, 1)}
+        for k, (name, c, walk) in world.items():
+            self.assertFalse(not walk and c in kanto_world.TREE_CLASSES and k not in covered,
+                             f'{name}: solid tree tile {k} has no tree model (invisible wall)')
+
 
 class KantoBuildCellTest(unittest.TestCase):
     """kanto_world --cells runs Black 2's real b2tools/world.build_cell over the composed Kanto cells (reused, not

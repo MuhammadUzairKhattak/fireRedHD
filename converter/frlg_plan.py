@@ -105,15 +105,21 @@ def plan_map(repo, table, name):
                                   dest=dest, metatiles=[[f'{int(grid[cy, cx]) & 0x3FF:03x}' for cx in range(x0, x1 + 1)]
                                                         for cy in range(y0 - roof, y1 + 1)]))
 
-    trees = []
+    # trees: cover every tree metatile with a 2x2 tree model, greedily from each block's top-left, so the solid tree
+    # tiles always have a visible tree over them. FireRed's tree art is not the clean tree_top_l/tree_top_r pairs the
+    # old pair rule expected, so that rule left many solid tree tiles (the route borders and cluster edges) undrawn -
+    # invisible walls. A tree tile no full 2x2 block covers is opened by kanto_world.compose so it is never a wall.
+    TREE = {'tree_top_l', 'tree_top_r', 'tree_bot', 'tree_tip'}
+    is_tree = lambda x, y: 0 <= x < W and 0 <= y < H and cls[y][x] in TREE
+    trees, covered = [], set()
     for y in range(H):
         for x in range(W - 1):
-            if cls[y][x] == 'tree_top_l' and cls[y][x + 1] == 'tree_top_r':
+            if (x, y) in covered or not is_tree(x, y):
+                continue
+            blk = [(x + dx, y + dz) for dz in (0, 1) for dx in (0, 1)]
+            if all(is_tree(bx, by) for bx, by in blk):
                 trees.append([x, y])
-    for x in range(W - 1):
-        if cls[0][x] == 'tree_bot' and cls[0][x + 1] == 'tree_bot' and [x, -1] not in trees \
-                and (x == 0 or [x - 1, -1] not in trees):
-            trees.append([x, -1])
+                covered.update(blk)
     tips_below = [[x, H] for x in range(W - 1) if cls[H - 1][x] == 'tree_tip' and cls[H - 1][x + 1] == 'tree_tip' and x % 2 == 0]
 
     elev_grid = [[(int(grid[y, x]) >> 12) & 0xF for x in range(W)] for y in range(H)]

@@ -33,6 +33,10 @@ LETTER = {'grass': '.', 'path': '#', 'tall_grass': ',', 'long_grass': '"', 'flow
           'building': 'B', 'building_roof': 'R', 'door': 'D', 'sign': 'S', 'prop': 'p', 'unknown': '?', 'blocked': 'X',
           'ledge_n': 'l', 'ledge_s': 'l', 'ledge_e': 'l', 'ledge_w': 'l'}
 
+# tree classes a 2x2 tree model stands on. compose() opens any solid tile of these that no tree anchor covers, so a
+# FireRed tree tile is never an invisible wall (the collision-matches-the-look rule Hoenn's forest fill enforces).
+TREE_CLASSES = {'tree_top_l', 'tree_top_r', 'tree_bot', 'tree_tip'}
+
 
 def load_doc(path=CFG_PATH):
     return json.load(open(path))
@@ -71,6 +75,11 @@ def compose(doc, plans=None):
             tree_tiles.update((ox + x + dx, oz + y + dz) for dx in (0, 1) for dz in (0, 1))
         mc = dict(mc)
         maps[name] = dict(ox=ox, oz=oz, plan=plan, cfg=mc, w=W, h=H)
+    # collision must match the look: a solid tree tile no 2x2 tree model covers would be an invisible wall, so open it
+    # (frlg_plan covers every full 2x2 tree block; only isolated/edge tiles fall through to here).
+    for k, (name, c, walk) in list(world.items()):
+        if not walk and c in TREE_CLASSES and k not in tree_tiles:
+            world[k] = (name, c, True)
     return world, trees, maps
 
 
