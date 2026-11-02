@@ -633,6 +633,24 @@ class KantoOpeningTest(unittest.TestCase):
         self.assertEqual(int.from_bytes(bytes.fromhex(self.ko.HIDDEN), 'little'), 0x2104, "HIDDEN must be 'movs r1, #4' (hidden)")
         self.assertEqual(int.from_bytes(bytes.fromhex(self.ko.VISIBLE), 'little'), 0x2100, "VISIBLE must be 'movs r1, #0' (no flag)")
 
+    def test_intro_movie_sites_are_hoenn_intro_verified(self):
+        """The season-card / Aspertia-flyover no-ops sit on the exact vanilla bytes patches/hoenn_intro.py already
+        ships to Hoenn, and none of the four ov035 edits overlap - so the movie removal cannot collide with the
+        first-map visibility edit or with itself."""
+        ko = self.ko
+        self.assertEqual(ko.SEASON_BANNER_BL, (0x0217c9c8 - ko.OV035_BASE, '02f0e2fa'), 'bl EventSeasonBanner_CreateStandalone')
+        self.assertEqual(ko.OPENING_CHAIN_BL, (0x0217c9d0 - ko.OV035_BASE, '9af6caf9'), 'shared bl GameEvent_ChainNext')
+        self.assertEqual(ko.FLYOVER_BL, (0x0217c9e8 - ko.OV035_BASE, 'e0f7aef8'), 'bl Event3DDemo_Create(gsys,event,5)')
+        self.assertEqual(int.from_bytes(bytes.fromhex(ko.NOP[:4]), 'little'), 0x46c0, 'NOP must be a Thumb mov-hint pair')
+        spans = [(at, at + len(new) // 2) for at, _old, new in ko.OV035_EDITS]
+        self.assertEqual(len(set(spans)), len(spans), 'ov035 edits must not overlap')
+
+    def test_rival_name_skip_is_hoenn_intro_verified(self):
+        ko = self.ko
+        self.assertEqual(ko.RIVAL_NAME_AT, 0x021a022a - 0x0219ce80, 'the ov162 rival-name movs offset')
+        self.assertEqual(int.from_bytes(bytes.fromhex(ko.RIVAL_ENTRY), 'little'), 0x2007, "must be 'movs r0, #7' (rival-name entry)")
+        self.assertEqual(int.from_bytes(bytes.fromhex(ko.INTRO_END), 'little'), 0x200c, "must be 'movs r0, #12' (intro end)")
+
 
 class KantoMusicDataTest(unittest.TestCase):
     """data/kanto_music.json must be sound before it is installed: every song slot is a Black 2 sequence the
