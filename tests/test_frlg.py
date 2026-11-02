@@ -111,28 +111,30 @@ class FrlgClassificationTest(unittest.TestCase):
 
     def test_no_solid_tile_is_invisible(self):
         """world.py's rule: a solid (non-walkable) tile must be drawn by some module, or it is an invisible wall the
-        player bumps into (this is what made the Kanto signs and door gaps invisible). Every class a prototype plan
-        marks solid must have a geometry owner. DRAWN mirrors the terrain modules' CLASSES plus world.build_cell's core
-        classes and terrain/kanto_features.py; when a new solid class appears with no owner here, either draw it (a
-        module) or reclassify it - never leave it invisible. Pure-python (frlg_plan only), so it runs on Windows."""
+        player bumps into (this is what made the Kanto signs, door gaps and Route 22's cliffs/ledges invisible). The
+        Kanto prototype builds FLAT (kanto_world.write_cells leaves world.HF None), so terrain/heights.py.draw returns
+        early and draws NOTHING for every class it owns (cliff, cave_entrance, ...) - those are invisible walls unless
+        frlg_plan.flatify folds them into a drawn class first. DRAWN lists only what the flat build actually renders:
+        terrain/ground.py + water.py + world.build_cell's core ground + terrain/kanto_features.py. Tree tiles are the
+        one solid CORE exception: kanto_world.compose opens any not covered by a 2x2 tree (test_no_invisible_tree_wall).
+        Pure-python (frlg_plan only), so it runs on Windows."""
         import frlg_plan
         GROUND = {'sand', 'ash_grass', 'long_grass', 'bike_path', 'bridge', 'fence', 'wall', 'bush', 'rock', 'prop'}
-        HEIGHTS = {'cliff', 'cliff_top', 'stairs', 'ledge_e', 'ledge_w', 'ledge_n', 'ledge_s', 'ledge_cap',
-                   'mountain', 'cave_entrance', 'cracked_floor', 'mud'}
         WATER = {'water', 'deep_water', 'current_n', 'current_s', 'current_e', 'current_w', 'waterfall', 'puddle', 'water_edge'}
-        CORE = {'grass', 'path', 'tall_grass', 'flowers', 'lava', 'sand_patch', 'tree',
-                'tree_top_l', 'tree_top_r', 'tree_bot', 'tree_tip'}
+        CORE = {'grass', 'path', 'tall_grass', 'flowers', 'lava', 'sand_patch'}
         KANTO = {'building', 'building_roof', 'door', 'sign'}
-        drawn = GROUND | HEIGHTS | WATER | CORE | KANTO
+        TREE = {'tree_top_l', 'tree_top_r', 'tree_bot', 'tree_tip'}
+        drawn = GROUND | WATER | CORE | KANTO
         repo = FrlgRepo(os.path.abspath(self.repo_root))
         table = frlg_plan.load_table()
         for name in load_config()['prototype_maps']:
             plan = frlg_plan.plan_map(repo, table, name)
             for y in range(plan['size'][1]):
                 for cls, walk in zip(plan['tiles'][y], plan['walkable'][y]):
-                    if not walk:
+                    if not walk and cls not in TREE:
                         self.assertTrue(cls in drawn or cls.startswith('other:'),
-                                        f'{name}: solid tile class {cls!r} has no geometry owner (invisible wall)')
+                                        f'{name}: solid tile class {cls!r} has no flat-build geometry owner '
+                                        f'(invisible wall; heights owns {sorted(frlg_plan.HEIGHTS_OWNED)})')
 
 
 class KantoWorldTest(unittest.TestCase):
@@ -233,6 +235,19 @@ class KantoWorldTest(unittest.TestCase):
         self.assertGreater(len(r2['trees']), 50, 'Route 2 should be lined with trees')
         self.assertEqual(len(r2['buildings']), 1)
         self.assertEqual(len(r22['buildings']), 1)
+
+    def test_route22_planks_are_walkable_path_not_railings(self):
+        """Route 22's tan boardwalk planks are walkable (solid=0); labelled 'fence' they rendered a railing the player
+        walked straight through (the reported "railings in incorrect places"). frlg_classify now labels them 'path', and
+        a walkable tile must never be a fence - only the solid railings (0e6/0e7/0ec/0ed/0f2/0f4/0f5) stay 'fence'."""
+        import json
+        r22 = json.load(open(os.path.join(self.tmp, 'Route22.json')))
+        for y in range(r22['size'][1]):
+            for cls, walk in zip(r22['tiles'][y], r22['walkable'][y]):
+                self.assertFalse(cls == 'fence' and walk,
+                                 'a walkable Route 22 plank is classed fence (renders a phantom railing)')
+        flat = {t for row in r22['tiles'] for t in row}
+        self.assertIn('path', flat, 'Route 22 lost its boardwalk path entirely')
 
 
 class KantoBuildCellTest(unittest.TestCase):

@@ -115,9 +115,12 @@ OVERRIDES = {
         # the pale mint route ground and the sandy/dirt patches:
         '0c3': 'grass', '0cc': 'grass',
         '178': 'sand', '17a': 'sand', '199': 'sand', '19a': 'sand',
-        # the wooden route fence (horizontal planks and bare posts):
-        '0e6': 'fence', '0f2': 'fence', '162': 'fence', '163': 'fence', '164': 'fence', '16a': 'fence', '16b': 'fence',
-        '16c': 'fence', '172': 'fence', '173': 'fence', '174': 'fence',
+        # the solid white/grey railings that wall off the route (0e6/0f2: a post with a railing arm):
+        '0e6': 'fence', '0f2': 'fence',
+        # the tan boardwalk planks are walkable (solid=0), not railings: draw them as path, never a fence (a fence here
+        # rendered a railing you could walk straight through - Route 22's "railings in incorrect places"):
+        '162': 'path', '163': 'path', '164': 'path', '16a': 'path', '16b': 'path',
+        '16c': 'path', '172': 'path', '173': 'path', '174': 'path',
         # small route shrubs (a trunk with a leafy top):
         '0e8': 'bush', '0e9': 'bush', '0f0': 'bush', '0f3': 'bush',
         # the route pond water:

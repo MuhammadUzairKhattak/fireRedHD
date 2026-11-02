@@ -21,6 +21,12 @@ from frlg_classify import class_by_behavior
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 OUT_DIR = os.path.join(ROOT, 'work', 'kanto', 'plans')
 
+# classes the FLAT Kanto build cannot draw. Mirrors b2tools/terrain/heights.py's CLASSES (a module-level read of the
+# Black 2 ov036.bin extract, so this converter must not import it) plus the south/north ledges, which heights.py does
+# not list at all (no module owns them). Keep in step with heights.CLASSES when a new height class is added there.
+HEIGHTS_OWNED = {'cliff', 'cliff_top', 'stairs', 'ledge_e', 'ledge_w', 'ledge_cap', 'mountain', 'cave_entrance',
+                 'cracked_floor', 'mud', 'ledge_s', 'ledge_n'}
+
 
 def load_table():
     """The FireRed label table: {namespaced_tileset: {hex_id: class}} from data/labels/frlg_*.json,
@@ -40,6 +46,28 @@ def load_table():
 def classify(table, renderer, tsym, m):
     c = class_by_behavior(renderer.behavior(m))
     return c or table.get(tsym, {}).get(f'{m:03x}')
+
+
+def flatify(cls, solid):
+    """Make a classified grid renderable by the FLAT Kanto build (kanto_world.write_cells runs world.py with HF=None,
+    so terrain/heights.py.draw returns early - `if FIELD is None: return` - and draws nothing). A solid tile whose class
+    only heights owns (a cliff, cave mouth, ...), or that no module owns at all (a south/north ledge: heights.py has no
+    ledge_s/ledge_n), is otherwise a barrier the player bumps into with nothing on screen - Route 22's invisible walls.
+    Fold each into the closest class a flat module does draw: a solid rock mass becomes a 'wall' (terrain/ground.py
+    draw_walls: a one-tile stone block, so collision still matches the look); a walkable heights tile and a ledge become
+    open 'grass' (a ledge is a one-tile step-down with no height to drop through when flat, so it is walked, not walled -
+    an honest simplification until Kanto heights, a4.3). Tree tiles are left to kanto_world.compose's tree cover."""
+    H, W = len(cls), len(cls[0])
+    for y in range(H):
+        for x in range(W):
+            c = cls[y][x]
+            if c in HEIGHTS_OWNED:
+                if c in ('ledge_s', 'ledge_n'):
+                    cls[y][x] = 'grass'
+                    solid[y][x] = False                     # a ledge is walked over, not a wall, when flat
+                else:
+                    cls[y][x] = 'wall' if solid[y][x] else 'grass'
+    return cls
 
 
 def plan_map(repo, table, name):
@@ -63,6 +91,10 @@ def plan_map(repo, table, name):
                 c = 'blocked' if solid[y][x] else 'unknown'
                 unclassified.setdefault(f'{tsym}:{m:03x}', []).append([x, y])
             cls[y][x] = c
+
+    # the flat Kanto build draws no heights-owned class, so fold those tiles into a drawn class before anything reads
+    # the grid (buildings below never see a 'cliff'/'ledge', and world.write_cell never leaves a solid tile undrawn).
+    flatify(cls, solid)
 
     # buildings: a solid component (labelled building/door/building_roof/blocked) that holds a warp becomes a
     # footprint, and the unlabelled non-solid rows above it a roof (plan_map.py's rule, unchanged)
