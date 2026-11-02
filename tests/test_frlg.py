@@ -403,5 +403,51 @@ class KantoEscapeRopeTest(unittest.TestCase):
         self.assertEqual(new.hex(), 'ff38a13801288041404208bd')
 
 
+class KantoTradeEvosTest(unittest.TestCase):
+    """b2tools/patches/kanto_trade_evos.py (slice a5.3) installs the Kanto trade-evolution *mechanic* by running
+    trade_evos' data-only steps 1-2 and deferring the shop-append (step 3) to the Kanto-marts content phase. The steps
+    touch no code, clang, shops or the intro chain and keep every archive's size, so the data-shape invariants that
+    make the change boot-safe are checkable statically, on Windows."""
+
+    PATCHES = os.path.join(ROOT, 'b2tools', 'patches')
+
+    def setUp(self):
+        if self.PATCHES not in sys.path:
+            sys.path.insert(0, self.PATCHES)
+        import json
+        self.kanto = json.load(open(os.path.join(ROOT, 'data', 'kanto_trade_evos.json')))
+        self.hoenn = json.load(open(os.path.join(ROOT, 'data', 'trade_evos.json')))
+
+    def test_kanto_json_shape(self):
+        # every evolution entry is [method, param, target]; symbols are the decomp's names (resolved by the patch)
+        self.assertTrue(self.kanto['evolutions'], 'no evolutions in kanto_trade_evos.json')
+        self.assertIn('keep_trade_methods', self.kanto)
+        for sp, lst in self.kanto['evolutions'].items():
+            self.assertTrue(sp.startswith('SPECIES_'), sp)
+            self.assertTrue(lst, f'{sp}: empty evolution list')
+            for e in lst:
+                self.assertEqual(len(e), 3, f'{sp}: entry {e} is not [method, param, target]')
+                self.assertTrue(e[0].startswith('EVO_METHOD_'), f'{sp}: method {e[0]}')
+
+    def test_covers_the_engine_fixed_trade_species(self):
+        # Black 2's a/0/1/9 fixes which species have a trade method, so the patch asserts
+        # traders == keys(evolutions). The Kanto set must equal the Hoenn set (both cover exactly Black 2's traders).
+        self.assertEqual(set(self.kanto['evolutions']), set(self.hoenn['evolutions']))
+
+    def test_shop_append_is_deferred(self):
+        # a5.3 ships the mechanic only: no shop block in the Kanto data (it needs Kanto marts / shops, Phase 2/3)
+        self.assertNotIn('shop', self.kanto, 'kanto_trade_evos must defer the shop-append (see the adapter docstring)')
+        self.assertIn('shop', self.hoenn)
+
+    def test_record_packing_keeps_archive_size(self):
+        # a/0/1/9 records are 7 x {u16 method, param, species} = 42 bytes; pack/entries_of keep that fixed size
+        # (the invariant that leaves the ROM file table and savestates unchanged), and round-trip.
+        import trade_evos
+        entries = [(8, 221, 65), (5, 0, 66)]               # ITEM, TRADE (kept via keep_trade_methods)
+        rec = trade_evos.pack(entries)
+        self.assertEqual(len(rec), 42, 'evolution record must stay 42 bytes')
+        self.assertEqual(trade_evos.entries_of(rec), entries)
+
+
 if __name__ == '__main__':
     unittest.main()

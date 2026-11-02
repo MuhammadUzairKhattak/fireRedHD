@@ -1,0 +1,44 @@
+{
+  "_doc": [
+    "Kanto trade evolutions made in-game (FireRedHD slice a5.3; installed by b2tools/patches/kanto_trade_evos.py).",
+    "Same mechanism as the Hoenn trade_evos patch (see data/trade_evos.json and notes there), re-targeted at the Kanto",
+    "build. Black 2's evolution table a/0/1/9 fixes which species have a trade method, so 'evolutions' must cover exactly",
+    "that set (the patch asserts traders == keys(evolutions)); the Gen 1 Kanto/Sevii traders (Kadabra, Machoke, Graveler,",
+    "Haunter, Poliwhirl, Slowpoke, Onix, Scyther, Seadra) sit alongside the later-gen traders Black 2 already knows.",
+    "keep_trade_methods: true keeps Black 2's own link-trade entries too, so a real link trade still evolves them.",
+    "shop is intentionally ABSENT: the shop-append (trade_evos step 3) needs Kanto marts (the `shops` content phase).",
+    "kanto_trade_evos installs the evolution + Bag-use data now and defers selling the evolution items to Phase 2/3."
+  ],
+  "keep_trade_methods": true,
+  "evolutions": {
+    "SPECIES_KADABRA":    [["EVO_METHOD_LEVEL", 36, "SPECIES_ALAKAZAM"]],
+    "SPECIES_MACHOKE":    [["EVO_METHOD_LEVEL", 38, "SPECIES_MACHAMP"]],
+    "SPECIES_GRAVELER":   [["EVO_METHOD_LEVEL", 35, "SPECIES_GOLEM"]],
+    "SPECIES_HAUNTER":    [["EVO_METHOD_LEVEL", 35, "SPECIES_GENGAR"]],
+    "SPECIES_BOLDORE":    [["EVO_METHOD_LEVEL", 35, "SPECIES_GIGALITH"]],
+    "SPECIES_GURDURR":    [["EVO_METHOD_LEVEL", 35, "SPECIES_CONKELDURR"]],
+
+    "SPECIES_POLIWHIRL":  [["EVO_METHOD_ITEM", "ITEM_WATER_STONE", "SPECIES_POLIWRATH"],
+                           ["EVO_METHOD_ITEM", "ITEM_KINGS_ROCK", "SPECIES_POLITOED"]],
+    "SPECIES_SLOWPOKE":   [["EVO_METHOD_LEVEL", 37, "SPECIES_SLOWBRO"],
+                           ["EVO_METHOD_ITEM", "ITEM_KINGS_ROCK", "SPECIES_SLOWKING"]],
+    "SPECIES_ONIX":       [["EVO_METHOD_ITEM", "ITEM_METAL_COAT", "SPECIES_STEELIX"]],
+    "SPECIES_SCYTHER":    [["EVO_METHOD_ITEM", "ITEM_METAL_COAT", "SPECIES_SCIZOR"]],
+    "SPECIES_SEADRA":     [["EVO_METHOD_ITEM", "ITEM_DRAGON_SCALE", "SPECIES_KINGDRA"]],
+    "SPECIES_PORYGON":    [["EVO_METHOD_ITEM", "ITEM_UP_GRADE", "SPECIES_PORYGON2"]],
+    "SPECIES_PORYGON2":   [["EVO_METHOD_ITEM", "ITEM_DUBIOUS_DISC", "SPECIES_PORYGON_Z"]],
+    "SPECIES_RHYDON":     [["EVO_METHOD_ITEM", "ITEM_PROTECTOR", "SPECIES_RHYPERIOR"]],
+    "SPECIES_ELECTABUZZ": [["EVO_METHOD_ITEM", "ITEM_ELECTIRIZER", "SPECIES_ELECTIVIRE"]],
+    "SPECIES_MAGMAR":     [["EVO_METHOD_ITEM", "ITEM_MAGMARIZER", "SPECIES_MAGMORTAR"]],
+    "SPECIES_DUSCLOPS":   [["EVO_METHOD_ITEM", "ITEM_REAPER_CLOTH", "SPECIES_DUSKNOIR"]],
+    "SPECIES_FEEBAS":     [["EVO_METHOD_BEAUTY", 170, "SPECIES_MILOTIC"],
+                           ["EVO_METHOD_ITEM", "ITEM_PRISM_SCALE", "SPECIES_MILOTIC"]],
+    "SPECIES_CLAMPERL":   [["EVO_METHOD_ITEM", "ITEM_DEEP_SEA_TOOTH", "SPECIES_HUNTAIL"],
+                           ["EVO_METHOD_ITEM", "ITEM_DEEP_SEA_SCALE", "SPECIES_GOREBYSS"]],
+
+    "SPECIES_KARRABLAST": [["EVO_METHOD_SPECIES_IN_PARTY", "SPECIES_SHELMET", "SPECIES_ESCAVALIER"],
+                           ["EVO_METHOD_SPECIES_IN_PARTY", "SPECIES_ACCELGOR", "SPECIES_ESCAVALIER"]],
+    "SPECIES_SHELMET":    [["EVO_METHOD_SPECIES_IN_PARTY", "SPECIES_KARRABLAST", "SPECIES_ACCELGOR"],
+                           ["EVO_METHOD_SPECIES_IN_PARTY", "SPECIES_ESCAVALIER", "SPECIES_ACCELGOR"]]
+  }
+}
