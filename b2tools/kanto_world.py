@@ -336,6 +336,19 @@ def package(out_dir=None, plan_dir=PLAN_DIR):
     zones = {}
     for name, mp in maps.items():
         world.map_events(name, mp, zones, put, hgt, zone_at, wgrid)
+    # a building whose map cfg names a Black 2 model (data/kanto_world.json 'buildings') is drawn by that placed model,
+    # not by kanto_features' placeholder massing: mark its footprint + roof tiles so the box is suppressed under it
+    # (the tiles stay solid walls; the model is the building, exactly as in Hoenn).
+    from terrain import kanto_features
+    modeled = set()
+    for mp in maps.values():
+        ox, oz = mp['ox'], mp['oz']
+        for b in mp['plan'].get('buildings', []):
+            if not mp['cfg'].get('buildings', {}).get(b['dest']):
+                continue
+            x0, y0, x1, y1 = b['footprint']
+            modeled.update((ox + x, oz + y) for y in range(y0 - b.get('roof_rows', 0), y1 + 1) for x in range(x0, x1 + 1))
+    kanto_features.MODELED = modeled
     shutil.rmtree(out_dir, ignore_errors=True)
     os.makedirs(out_dir, exist_ok=True)
     for c in order:

@@ -284,6 +284,20 @@ class KantoBuildCellTest(unittest.TestCase):
             self.assertTrue(z['place'] and z['kind'] in ('town', 'route'))
         self.assertTrue(any(len(z['maps']) == 1 for z in zones.values()))
 
+    def test_package_places_black2_building_models(self):
+        """data/kanto_world.json 'buildings' names a Black 2 native model per footprint; package() must place it (a cell
+        gains placement bytes) and mark those tiles in kanto_features.MODELED so the placeholder box is suppressed."""
+        import kanto_world
+        from terrain import kanto_features
+        out = os.path.join(self.tmp, 'bld_world')
+        self.assertEqual(kanto_world.package(out_dir=out, plan_dir=self.tmp), 0)
+        self.assertTrue(kanto_features.MODELED,
+                        'package() marked no building footprint to suppress the box for (buildings config not read?)')
+        sizes = [os.path.getsize(os.path.join(out, d, 'placements.bin'))
+                 for d in os.listdir(out) if os.path.exists(os.path.join(out, d, 'placements.bin'))]
+        self.assertTrue(sizes and max(sizes) > min(sizes),
+                        'no Black 2 building model placement was written to any cell')
+
     def test_package_manifest_is_injector_ready(self):
         """The manifest patches/kanto_world.apply() consumes is a valid injection: the cell chunks are contiguous from
         first_chunk (the patch appends them on Black 2's own a/0/0/8 count), every cell sits on the WxH matrix grid and
@@ -364,6 +378,10 @@ class KantoBuildingGeometryTest(unittest.TestCase):
     merged massing per footprint and gives solid 'sign' tiles a visible signpost - none of which a Hoenn module draws.
     It uses only build_chunk primitives, so it runs on Windows."""
 
+    def setUp(self):
+        from terrain import kanto_features
+        kanto_features.MODELED = set()          # order-independent: package() tests may have left real footprints here
+
     @staticmethod
     def _cell(grid):
         import build_chunk as bc
@@ -413,6 +431,22 @@ class KantoBuildingGeometryTest(unittest.TestCase):
         m = Model('test')
         kanto_features.draw(m, self._cell({(0, 0): ('PalletTown', 'grass', True)}))
         self.assertFalse(m.tris, 'a grass tile must not gain building or sign geometry')
+
+    def test_modeled_footprint_suppresses_the_box(self):
+        """When map_events places a real Black 2 building model on a footprint (data/kanto_world.json 'buildings'),
+        kanto_features.MODELED holds those world tiles and the placeholder box is suppressed - the model is the building."""
+        from dae import Model
+        from terrain import kanto_features
+        grid = {(1, 1): ('PalletTown', 'building', False),
+                (1, 2): ('PalletTown', 'building_roof', False)}
+        saved = kanto_features.MODELED
+        try:
+            kanto_features.MODELED = {(1, 1), (1, 2)}          # _cell maps world tile == (tx, tz)
+            m = Model('test')
+            kanto_features.draw(m, self._cell(grid))
+            self.assertFalse(m.tris, 'a footprint covered by a real building model must not also draw a placeholder box')
+        finally:
+            kanto_features.MODELED = saved
 
 
 class KantoEscapeRopeTest(unittest.TestCase):

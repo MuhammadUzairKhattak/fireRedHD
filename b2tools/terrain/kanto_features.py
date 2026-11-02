@@ -15,6 +15,9 @@ content). Real per-building art (houses, Oak's Lab) replaces this massing in a l
 
 CLASSES = {'building', 'building_roof', 'door', 'sign'}
 FP = {'building', 'building_roof', 'door'}        # footprint classes merged into one massing per building
+MODELED = set()                                    # world tiles (wx, wz) a real Black 2 building model stands on (map_events
+                                                   # placed them from data/kanto_world.json 'buildings'); their placeholder
+                                                   # box is suppressed so only the model shows. kanto_world.package() fills it.
 TEXTURES = {'iwa01': 3, 'ki02c': 3}               # roof stone + sign wood: both Black 2 area-2 set 3 (write_palettes covers them)
 WALL = 40                                         # model units (a tile is 16): a one-storey massing (~2.5 tiles tall), like a Gen 3 house
 ROOF_EXTRA = 8                                    # the roof slab sits this much above the wall tops, so a house reads as walls under a raised top
@@ -63,6 +66,8 @@ def draw(m, cell):
         for tx in range(32):
             c = klass(tx, tz)
             if c in FP:
+                if (cell.X + tx, cell.Z + tz) in MODELED:
+                    continue                                       # a real Black 2 building model stands here: no box under it
                 x0, x1, z0, z1 = bc.ux(tx), bc.ux(tx + 1), bc.uz(tz), bc.uz(tz + 1)
                 sides = [s for s, nb in (('north', (tx, tz - 1)), ('south', (tx, tz + 1)),
                                          ('west', (tx - 1, tz)), ('east', (tx + 1, tz))) if not fp(*nb)]
