@@ -354,5 +354,54 @@ class KantoBuildingGeometryTest(unittest.TestCase):
         self.assertNotIn('t02_kabe01', m.tris, 'a grass tile must not gain building geometry')
 
 
+class KantoEscapeRopeTest(unittest.TestCase):
+    """b2tools/patches/kanto_escape_rope.py is a thin adapter that enables the generic engine patch
+    escape_rope.py on the Kanto build without editing it: escape_rope reads the region's overworld matrix from
+    HOENN_WORLD_DIR, so the adapter points it at the packaged Kanto world (KANTO_WORLD_DIR) and delegates. It
+    compiles no C and touches no shared ITCM arena, so it imports and checks on Windows."""
+
+    PATCHES = os.path.join(ROOT, 'b2tools', 'patches')
+
+    def _import(self):
+        if self.PATCHES not in sys.path:
+            sys.path.insert(0, self.PATCHES)
+        import kanto_escape_rope
+        import escape_rope
+        return kanto_escape_rope, escape_rope
+
+    def test_adapter_points_escape_rope_at_kanto_world(self):
+        kanto_escape_rope, escape_rope = self._import()
+        seen = {}
+        real, real_env = escape_rope.apply_code, os.environ.get('HOENN_WORLD_DIR')
+
+        def fake_apply_code(code):
+            seen['code'] = code
+            seen['world'] = os.environ.get('HOENN_WORLD_DIR')
+            return 'escape_rope: GetIsZoneMatrix0 = Hoenn outdoor matrices 416..416'
+
+        escape_rope.apply_code = fake_apply_code
+        os.environ['KANTO_WORLD_DIR'] = '/tmp/kanworld'
+        try:
+            msg = kanto_escape_rope.apply_code('/tmp/code')
+        finally:
+            escape_rope.apply_code = real
+            if real_env is None:
+                os.environ.pop('HOENN_WORLD_DIR', None)
+            else:
+                os.environ['HOENN_WORLD_DIR'] = real_env
+        self.assertEqual(seen['code'], '/tmp/code', 'adapter did not pass the code dir through')
+        self.assertEqual(seen['world'], '/tmp/kanworld', 'adapter did not aim escape_rope at KANTO_WORLD_DIR')
+        self.assertIn('Kanto', msg, 'adapter left the Hoenn wording in its report')
+
+    def test_kanto_matrix_encoding_matches_escape_rope(self):
+        # Kanto's world.json matrix 416, no standalone maps yet: the same 12 bytes escape_rope writes into
+        # GetIsZoneMatrix0 (0x02018d04), so the escape-rope exit fix is valid on the prototype.
+        import struct
+        m, n = 416, 0
+        self.assertTrue(255 < m <= 510 and n + 1 <= 255, 'Kanto matrix outside escape_rope\'s accepted range')
+        new = struct.pack('<6H', 0x3800 | 255, 0x3800 | (m - 255), 0x2800 | (n + 1), 0x4180, 0x4240, 0xBD08)
+        self.assertEqual(new.hex(), 'ff38a13801288041404208bd')
+
+
 if __name__ == '__main__':
     unittest.main()

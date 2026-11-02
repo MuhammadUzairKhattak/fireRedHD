@@ -21,5 +21,5 @@ if [[ "$1" != "--skip-package" ]]; then
   (cd b2tools && $PY kanto_world.py --world)
 fi
 (cd b2tools && $PY kanto_world.py --nsbmd)
-(cd b2tools && $PY build_rom.py --clean kanto_world) | grep -E "nds|patch kanto_world" | cut -c1-200
+(cd b2tools && $PY build_rom.py --clean kanto_world kanto_door kanto_escape_rope) | grep -E "nds|patch kanto_" | cut -c1-200
 rm -rf "$HOENN_BUILD_DIR/files" "$HOENN_BUILD_DIR/code"    # keep only the ROM (disk space; next --clean recreates them)
