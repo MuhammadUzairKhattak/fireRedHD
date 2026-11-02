@@ -103,6 +103,30 @@ OVERRIDES = {
         '197': 'building',
         # a brown rock at the south-west cliff base:
         '1f2': 'cliff',
+        # --- Route 2 / Route 22 additions (contact sheet work/kanto/sheets/unclassified.png) ---
+        # pale grey/blue paneled walls and the tan market walls (solid building faces):
+        '044': 'building', '045': 'building', '046': 'building', '04c': 'building', '04d': 'building', '04e': 'building',
+        '05c': 'building', '05d': 'building', '05e': 'building', '064': 'building', '065': 'building', '066': 'building',
+        '170': 'building', '171': 'building', '183': 'building', '184': 'building', '185': 'building', '188': 'building',
+        '189': 'building', '18a': 'building', '190': 'building', '191': 'building', '192': 'building',
+        # the brown rock/cliff that borders the route, and the dark Viridian Forest mouth:
+        '068': 'cliff', '070': 'cliff', '078': 'cliff', '0b3': 'cliff', '198': 'cliff',
+        '0a9': 'cave_entrance',
+        # the pale mint route ground and the sandy/dirt patches:
+        '0c3': 'grass', '0cc': 'grass',
+        '178': 'sand', '17a': 'sand', '199': 'sand', '19a': 'sand',
+        # the wooden route fence (horizontal planks and bare posts):
+        '0e6': 'fence', '0f2': 'fence', '162': 'fence', '163': 'fence', '164': 'fence', '16a': 'fence', '16b': 'fence',
+        '16c': 'fence', '172': 'fence', '173': 'fence', '174': 'fence',
+        # small route shrubs (a trunk with a leafy top):
+        '0e8': 'bush', '0e9': 'bush', '0f0': 'bush', '0f3': 'bush',
+        # the route pond water:
+        '1b5': 'water', '1b6': 'water', '1b7': 'water',
+        # Route 2's blue-roofed shop: windowed walls, the blue roof rows, and the wall row under them:
+        '006': 'building', '007': 'building',
+        '02c': 'building_roof', '02d': 'building_roof', '02f': 'building_roof',
+        '034': 'building_roof', '035': 'building_roof', '036': 'building_roof', '037': 'building_roof',
+        '03c': 'building', '03f': 'building',
     },
     'frlg:gTileset_PalletTown': {
         # houses: slanted roof rows, walls/windows (solid), and the pale mint town ground under/around them.
@@ -147,6 +171,19 @@ OVERRIDES = {
         '2b2': 'path', '2b3': 'path', '2b4': 'path',
         # a brown rock at the cliff base:
         '2bc': 'cliff',
+        # --- Route 2 / Route 22 additions (the maps reuse Viridian's secondary tileset) ---
+        # the tan market wall and the pale grey town walls:
+        '296': 'building', '2b5': 'building', '2b6': 'building', '2b7': 'building', '2cd': 'building', '2ce': 'building',
+        # the brown cliff/rock:
+        '297': 'cliff', '29e': 'cliff', '2db': 'cliff',
+        # trimmed round hedges and leafy bushes:
+        '2b8': 'bush', '2b9': 'bush', '2ba': 'bush', '2bb': 'bush', '2c4': 'bush', '2cf': 'bush',
+        # Route 22's warehouse/rival's-house walls (brick, pale siding, glass fronts) and the hedges beside them:
+        '2bd': 'building', '2be': 'building', '2bf': 'building', '2c0': 'building', '2c1': 'building',
+        '2c2': 'building', '2c3': 'building', '2c5': 'building', '2c7': 'building', '2c8': 'building',
+        '2ca': 'building', '2d0': 'building', '2d2': 'building', '2d4': 'building', '2d5': 'building',
+        '2d6': 'building', '2d8': 'building', '2da': 'building',
+        '2cb': 'bush', '2d3': 'bush',
     },
 }
 

@@ -213,6 +213,27 @@ class KantoWorldTest(unittest.TestCase):
             self.assertFalse(not walk and c in kanto_world.TREE_CLASSES and k not in covered,
                              f'{name}: solid tree tile {k} has no tree model (invisible wall)')
 
+    def test_every_prototype_map_classifies_clean(self):
+        """The classification gateway: every map in data/frlg_source.json's prototype_maps must plan with no
+        unclassified metatiles (a behaviour-0x00 tile with no OVERRIDES label would silently load as 'unknown'/
+        'blocked'). This is the invariant that must hold before a new Kanto map joins the web."""
+        import json
+        for name in load_config()['prototype_maps']:
+            plan = json.load(open(os.path.join(self.tmp, f'{name}.json')))
+            self.assertFalse(plan['unclassified'], f'{name} has unclassified metatiles: run frlg_classify.py')
+
+    def test_route2_and_route22_have_content(self):
+        """Route 2 (the long forested route north of Viridian) and Route 22 (west) must actually carry terrain:
+        Route 2 a dense tree border, both a detected building - guards against a map that plans but composes empty."""
+        import json
+        r2 = json.load(open(os.path.join(self.tmp, 'Route2.json')))
+        r22 = json.load(open(os.path.join(self.tmp, 'Route22.json')))
+        self.assertEqual(r2['size'], [24, 80])
+        self.assertEqual(r22['size'], [48, 24])
+        self.assertGreater(len(r2['trees']), 50, 'Route 2 should be lined with trees')
+        self.assertEqual(len(r2['buildings']), 1)
+        self.assertEqual(len(r22['buildings']), 1)
+
 
 class KantoBuildCellTest(unittest.TestCase):
     """kanto_world --cells runs Black 2's real b2tools/world.build_cell over the composed Kanto cells (reused, not

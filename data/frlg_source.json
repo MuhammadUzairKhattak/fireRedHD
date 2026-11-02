@@ -11,6 +11,8 @@
  "prototype_maps": [
   "PalletTown",
   "Route1",
-  "ViridianCity"
+  "ViridianCity",
+  "Route2",
+  "Route22"
  ]
 }
