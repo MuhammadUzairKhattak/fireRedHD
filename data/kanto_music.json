@@ -1,0 +1,21 @@
+{
+  "_doc": [
+    "FireRedHD slice a5.4: the FireRed/LeafGreen soundtrack data, layered over the Hoenn RSE->Black 2 conversion.",
+    "The M4A engine and the Black 2 instrument library / calibration (data/hoenn_music.json 'defaults'/'roles'/'noise'/",
+    "'drums' and data/hoenn_music_levels.json) are reused unchanged; only what differs for FireRed is declared here:",
+    "  defaults: GBA sample names that exist only in FireRed (pokefirered's direct_sound_data.inc labels), each mapped",
+    "    to a Black 2 instrument program (a measured id from hoenn_music_levels.json 'programs'). Pallet Town and Route 1",
+    "    use four names RSE never had; the rest of the FRLG samples share RSE's labels and need no entry here.",
+    "  slots / songs are added when the songs are installed into swan_sound_data.sdat (the follow-on steps): 'slots' maps",
+    "    each FRLG song to the Black 2 sequence slot it takes over, 'songs' holds per-song instrument/volume overrides.",
+    "Program choices for the pianos/e-piano/whistle are the closest measured keyboard/wind timbres; the on-screen result",
+    "is what the user tunes (no emulator here, so these are a starting point, not a claim the mix is final)."
+  ],
+  "defaults": {
+    "steinway_b_piano": { "program": 0 },
+    "sd90_classical_detuned_ep1_low": { "program": 3 },
+    "sd90_classical_detuned_ep1_high": { "program": 3 },
+    "sd90_classical_whistle": { "program": 47 }
+  },
+  "songs": {}
+}

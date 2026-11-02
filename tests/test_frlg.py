@@ -497,6 +497,47 @@ class KantoMusicFrlgReaderTest(unittest.TestCase):
             self.assertGreater(h['tracks'], 0, f'{song}: no tracks')
             self.assertTrue(any(t.loop_tick is not None for t in tracks), f'{song}: nothing loops (a field song must)')
 
+    def test_sample_map_resolves(self):
+        # pokefirered drops pokeruby's `@ address` labels, so the reader recovers addresses by locating each sample's
+        # .incbin blob in the dump; it must cover most samples and name the FRLG-only ones the conversion needs.
+        names = self.rom._build_sample_names()
+        self.assertGreater(len(names), 80, 'FRLG sample map should resolve most pokefirered samples')
+        self.assertIn('steinway_b_piano', set(names.values()), 'FRLG-only sample names must resolve')
+        self.assertIn('sc88pro_nylon_str_guitar', set(names.values()), 'shared RSE/FRLG names must resolve')
+
+
+class KantoMusicConvertTest(unittest.TestCase):
+    """a5.4 step2: the FireRed songs the Kanto prototype plays convert to Black 2 SSEQ/SBNK/SWAR. The converter reads
+    Black 2's instrument library from external/pokebw2/.../swan_sound_data.sdat (a WSL-only symlink), so it skips on
+    Windows."""
+
+    @classmethod
+    def setUpClass(cls):
+        for p in (os.path.join(ROOT, 'b2tools'), os.path.join(ROOT, 'b2tools', 'patches')):
+            if p not in sys.path:
+                sys.path.insert(0, p)
+        try:
+            from sdat import SDAT, DEFAULT
+            open(DEFAULT, 'rb').read()
+        except Exception as e:
+            raise unittest.SkipTest(f'Black 2 SDAT not readable (run under WSL): {e}')
+        import kanto_music
+        cls.m = kanto_music
+
+    def test_frlg_defaults_are_merged(self):
+        mp = self.m.mapping()
+        for name in ('steinway_b_piano', 'sd90_classical_whistle'):
+            self.assertIn(name, mp['defaults'], f'{name} missing from the merged instrument table')
+
+    def test_kanto_songs_convert(self):
+        songs, total = self.m.convert_all(self.m.KANTO_SONGS)
+        self.assertEqual(set(songs), set(self.m.KANTO_SONGS))
+        for s, (q, b, w, vol) in songs.items():
+            self.assertGreater(len(q), 0, f'{s}: empty sseq')
+            self.assertGreater(len(w), 0, f'{s}: empty swar')
+            self.assertTrue(0 <= vol <= 127, f'{s}: INFO volume {vol} out of range')
+        self.assertGreater(total, 0)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -27,6 +27,7 @@ import m4a  # noqa: E402  (the shared M4A engine parsing, reused unchanged)
 ROM_PATH = os.path.join(ROOT, 'roms', 'firered_rev1_original.gba')
 PFIR = os.path.join(ROOT, 'external', 'pokefirered')
 SONG_TABLE_INC = os.path.join(PFIR, 'sound', 'song_table.inc')
+DS_INC = os.path.join(PFIR, 'sound', 'direct_sound_data.inc')
 
 # the songs the Kanto prototype's maps and title play (pokefirered data/maps/<map>/map.json "music", lower-cased)
 KANTO_SONGS = ['mus_pallet', 'mus_route1', 'mus_title']
@@ -58,8 +59,28 @@ class FrlgRom(m4a.GbaRom):
         raise SystemExit('FireRed song table not found in the dump')
 
     def sample_name(self, addr):
-        # not reconstructed yet (pokefirered's direct_sound_data.inc has no `@ address` labels): fall back to the hex
-        return self.sample_names.get(addr, f'{addr:08X}') if self.sample_names else f'{addr:08X}'
+        if self.sample_names is None:
+            self.sample_names = self._build_sample_names()
+        return self.sample_names.get(addr, f'{addr:08X}')
+
+    def _build_sample_names(self):
+        """FireRed's sample->address map. pokeruby's direct_sound_data.inc listed each sample with its `@ address`,
+        pokefirered's does not (the decomp resolves them at link time), so recover them instead: each
+        `DirectSoundWaveData_NAME::` is a `.incbin "sound/direct_sound_samples/NAME.bin"` and that blob sits verbatim
+        in the dump, so finding the bytes gives the address. A few unused/identical samples do not appear (or collide);
+        those are skipped (voice_key only needs the samples the songs actually play)."""
+        names = {}
+        for label, rel in re.findall(r'DirectSoundWaveData_(\w+)::\s*\.incbin\s*"([^"]+)"', open(DS_INC).read()):
+            p = os.path.join(PFIR, rel.replace('\\', os.sep).replace('/', os.sep))
+            if not os.path.exists(p):
+                continue
+            blob = open(p, 'rb').read()
+            if len(blob) < 16:
+                continue
+            off = self.d.find(blob)                                  # first match is the sample's home
+            if off >= 0:
+                names.setdefault(0x08000000 + off, label)
+        return names
 
 
 def dump(name, rom=None):
@@ -71,6 +92,19 @@ def dump(name, rom=None):
     print(f'{name}: table {rom.song_table:08X}, song #{n}, header {h["addr"]:08X}, {h["tracks"]} tracks, '
           f'voicegroup {h["voicegroup"]:08X}, {loops}/{len(tracks)} looping, {notes} notes')
     return h, tracks
+
+
+def voices(name, rom=None, limit=None):
+    """Each voice a song uses, resolved to its GBA instrument name (the map the instrument conversion keys on)."""
+    rom = rom or FrlgRom()
+    h = rom.header(rom.song_index(name))
+    used = sorted({e[2] for t in m4a.parse_song(rom, rom.song_index(name))[1] for e in t.events if e[0] == 'voice'})
+    out = []
+    for v in used[:limit]:
+        desc = rom.describe_voice(h['voicegroup'], v)
+        out.append((v, desc))
+        print(f'  voice {v:3d}: {desc}')
+    return out
 
 
 def main(argv):
