@@ -55,6 +55,54 @@ OVERRIDES = {
         '0e3': 'path', '0e4': 'path', '0e5': 'path', '102': 'path', '103': 'path', '104': 'path', '105': 'path',
         # the metal gate where Route 1 meets Pallet Town (solid, grey, paired posts):
         '0e7': 'fence', '0ec': 'fence', '0ed': 'fence',
+        # --- Viridian City additions (contact sheets work/kanto/sheets/b_gTileset_General_*.png) ---
+        # a trimmed round hedge ball:
+        '005': 'bush',
+        # the decorative town pond: rounded shore corners vs the flat surface, and the fountain spray pieces:
+        '028': 'water_edge', '029': 'water', '02a': 'water', '02b': 'water_edge',
+        '030': 'water', '031': 'water', '032': 'water', '033': 'water',
+        '038': 'water_edge', '039': 'prop', '03a': 'prop', '03b': 'water_edge',
+        # wall-mounted shop signage (the letters 'HA'/'RT'/'P'/'C' and a round emblem):
+        '040': 'sign', '041': 'sign', '05a': 'sign', '060': 'sign', '061': 'sign',
+        # the red-tiled market roofs and a grey sloped roof edge:
+        '048': 'building_roof', '049': 'building_roof', '04a': 'building_roof', '04b': 'building_roof',
+        '050': 'building_roof', '051': 'building_roof', '052': 'building_roof', '053': 'building_roof',
+        '063': 'building_roof',
+        # a rock at the pond edge:
+        '058': 'prop',
+        # town buildings (grey walls with blue windows):
+        '059': 'building', '05b': 'building',
+        # the brown mountain/cliff wall that borders Viridian's north and west:
+        '069': 'cliff', '06a': 'cliff', '06b': 'cliff', '06c': 'cliff', '06d': 'cliff',
+        '071': 'cliff', '072': 'cliff', '073': 'cliff', '075': 'cliff', '079': 'cliff',
+        '07a': 'cliff', '07b': 'cliff', '07c': 'cliff', '07d': 'cliff', '0b2': 'cliff',
+        '0ba': 'cliff', '0bb': 'cliff',
+        # the pale mint town ground:
+        '0bd': 'grass', '0be': 'grass', '0bf': 'grass', '0c4': 'grass', '0c5': 'grass',
+        '0c6': 'grass', '0c7': 'grass', '0cb': 'grass', '0cd': 'grass', '0ce': 'grass', '0cf': 'grass',
+        # grey railing/fence posts (paired) along the walkways:
+        '0f4': 'fence', '0f5': 'fence', '0fc': 'fence', '0fd': 'fence',
+        # grass with a dirt lip at one corner:
+        '133': 'grass',
+        # the tan-sided market/warehouse walls (with window rows):
+        '141': 'building', '142': 'building', '143': 'building', '149': 'building', '14a': 'building',
+        '14b': 'building', '150': 'building', '151': 'building', '152': 'building', '154': 'building',
+        '156': 'building', '159': 'building', '15a': 'building', '15c': 'building', '15e': 'building',
+        '15f': 'building',
+        # a Poké Ball emblem painted on the ground:
+        '153': 'prop',
+        # grass with a building edge drawn over the top:
+        '158': 'grass',
+        # a red-domed roof top:
+        '160': 'building_roof',
+        # the pale grey paved town squares:
+        '165': 'path', '166': 'path', '167': 'path', '16d': 'path', '16e': 'path', '16f': 'path',
+        '175': 'path', '176': 'path', '177': 'path', '195': 'path', '196': 'path', '19d': 'path', '19e': 'path',
+        # a glass-fronted wall and its red/grey roof edges:
+        '186': 'building', '187': 'building_roof', '18f': 'building_roof', '19f': 'building_roof',
+        '197': 'building',
+        # a brown rock at the south-west cliff base:
+        '1f2': 'cliff',
     },
     'frlg:gTileset_PalletTown': {
         # houses: slanted roof rows, walls/windows (solid), and the pale mint town ground under/around them.
@@ -80,6 +128,25 @@ OVERRIDES = {
         '2c6': 'grass', '2c7': 'grass',
         '2c8': 'building', '2c9': 'building', '2cb': 'building', '2cc': 'building', '2cd': 'building',
         '2ce': 'grass', '2d0': 'building', '2d8': 'building',
+    },
+    'frlg:gTileset_ViridianCity': {
+        # Viridian's own secondary tileset (contact sheets b_gTileset_ViridianCity_*.png).
+        # trimmed hedges around the town (the walk-behind top row and the solid balls):
+        '280': 'bush', '281': 'bush', '282': 'bush', '284': 'bush', '285': 'bush', '286': 'bush',
+        '287': 'bush', '288': 'bush', '289': 'bush', '28a': 'bush', '28c': 'bush', '28d': 'bush',
+        '290': 'bush', '291': 'bush', '292': 'bush', '293': 'bush', '294': 'bush',
+        # the market/shop buildings (tan walls, dark window grids, glass fronts):
+        '283': 'building', '28b': 'building', '29d': 'building', '2a5': 'building', '2a6': 'building',
+        '2a7': 'building', '2ab': 'building', '2ad': 'building', '2ae': 'building', '2af': 'building',
+        # the garden archway / planter feature with its fountain emblem:
+        '298': 'prop', '29a': 'prop', '29b': 'prop', '29c': 'prop',
+        # grass at the base of the garden structure:
+        '2a0': 'grass', '2a2': 'grass', '2a3': 'grass', '2a4': 'grass',
+        # the pale grey paving (with hedge/roof edges drawn over it):
+        '2a8': 'path', '2a9': 'path', '2aa': 'path', '2ac': 'path', '2b0': 'path', '2b1': 'path',
+        '2b2': 'path', '2b3': 'path', '2b4': 'path',
+        # a brown rock at the cliff base:
+        '2bc': 'cliff',
     },
 }
 
