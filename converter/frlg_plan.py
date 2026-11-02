@@ -8,7 +8,9 @@ the 640-metatile primary split) and classifies each metatile with the FireRed ta
 (data/labels/frlg_gTileset_*.json) - Hoenn's ids do not apply. The building (a warp inside a solid component becomes a
 footprint, the rows above it a roof) and tree (a tree_top_l/tree_top_r pair) detection and the per-tile elevation from
 blockdata bits 12-15 match plan_map.py, so b2tools/world.py consumes a Kanto plan exactly as it does a Hoenn one.
-A metatile with no label is a hard error (it would load as 'unknown'): run frlg_classify.py first.
+An MB_NORMAL metatile with no by-eye label is not an error here: it falls back to a navigable placeholder (a solid
+'building' box or open 'grass', see PLACEHOLDER_*) and is tallied in the plan's 'placeholders' for frlg_classify.py to
+label by eye later - so an un-reviewed city is walkable ground, never a field of invisible walls.
 """
 import json
 import os
@@ -26,6 +28,13 @@ OUT_DIR = os.path.join(ROOT, 'work', 'kanto', 'plans')
 # not list at all (no module owns them). Keep in step with heights.CLASSES when a new height class is added there.
 HEIGHTS_OWNED = {'cliff', 'cliff_top', 'stairs', 'ledge_e', 'ledge_w', 'ledge_cap', 'mountain', 'cave_entrance',
                  'cracked_floor', 'mud', 'ledge_s', 'ledge_n'}
+
+# Navigable placeholder classes for an MB_NORMAL metatile that has no by-eye label yet (converter/frlg_classify.py
+# OVERRIDES). The whole-Kanto expansion has ~1.5k unlabelled city tiles; leaving them 'unknown'/'blocked' would paint
+# invisible walls across every un-reviewed city, so an unlabelled tile falls back to a class the FLAT build draws:
+# a solid metatile becomes a 'building' box, a walkable one open 'grass'. Each is counted in the plan's 'placeholders'
+# so frlg_classify's by-eye pass can later replace them; a labelled tile never hits this path.
+PLACEHOLDER_SOLID, PLACEHOLDER_OPEN = 'building', 'grass'
 
 
 def load_table():
@@ -82,14 +91,17 @@ def plan_map(repo, table, name):
     cls = [[None] * W for _ in range(H)]
     solid = [[bool((int(grid[y, x]) >> 10) & 3) for x in range(W)] for y in range(H)]
     unclassified = {}
+    placeholders = {}
     for y in range(H):
         for x in range(W):
             m = int(grid[y, x]) & 0x3FF
             tsym = prim if m < split else sec
             c = classify(table, renderer, tsym, m)
             if c is None:
-                c = 'blocked' if solid[y][x] else 'unknown'
-                unclassified.setdefault(f'{tsym}:{m:03x}', []).append([x, y])
+                # an unlabelled metatile stays navigable (a solid box or open grass), never an invisible wall
+                c = PLACEHOLDER_SOLID if solid[y][x] else PLACEHOLDER_OPEN
+                key = f'{tsym}:{m:03x}'
+                placeholders[key] = placeholders.get(key, 0) + 1
             cls[y][x] = c
 
     # the flat Kanto build draws no heights-owned class, so fold those tiles into a drawn class before anything reads
@@ -163,7 +175,8 @@ def plan_map(repo, table, name):
                 trees=trees, trees_below_edge=tips_below, buildings=buildings,
                 signs=[dict(x=b['x'], y=b['y'], script=b.get('script')) for b in mj.get('bg_events', []) if b.get('type') == 'sign'],
                 warps=[dict(id=i, x=w['x'], y=w['y'], dest=w['dest_map'], dest_warp=w['dest_warp_id']) for i, w in enumerate(warps)],
-                connections=mj.get('connections'), unclassified=left)
+                connections=mj.get('connections'), unclassified=left,
+                placeholders={k: n for k, n in sorted(placeholders.items(), key=lambda kv: -kv[1])})
     return plan
 
 

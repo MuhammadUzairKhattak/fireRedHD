@@ -6,31 +6,1009 @@
  "area": 2,
  "first_chunk": 1065,
  "layout": {
-  "Route22": {"tile_x": 0, "tile_z": 90},
-  "Route2": {"tile_x": 60, "tile_z": 0},
-  "ViridianCity": {"tile_x": 48, "tile_z": 80},
-  "Route1": {"tile_x": 60, "tile_z": 120},
-  "PalletTown": {"tile_x": 60, "tile_z": 160}
+  "CeladonCity": {
+   "tile_x": 180,
+   "tile_z": 120
+  },
+  "CeruleanCity": {
+   "tile_x": 264,
+   "tile_z": 40
+  },
+  "CinnabarIsland": {
+   "tile_x": 78,
+   "tile_z": 380
+  },
+  "FiveIsland": {
+   "tile_x": 48,
+   "tile_z": 426
+  },
+  "FiveIsland_Meadow": {
+   "tile_x": 72,
+   "tile_z": 426
+  },
+  "FiveIsland_MemorialPillar": {
+   "tile_x": 108,
+   "tile_z": 592
+  },
+  "FiveIsland_ResortGorgeous": {
+   "tile_x": 138,
+   "tile_z": 592
+  },
+  "FiveIsland_WaterLabyrinth": {
+   "tile_x": 0,
+   "tile_z": 406
+  },
+  "FuchsiaCity": {
+   "tile_x": 210,
+   "tile_z": 300
+  },
+  "IndigoPlateau_Exterior": {
+   "tile_x": 0,
+   "tile_z": 10
+  },
+  "LavenderTown": {
+   "tile_x": 402,
+   "tile_z": 130
+  },
+  "OneIsland": {
+   "tile_x": 102,
+   "tile_z": 526
+  },
+  "OneIsland_KindleRoad": {
+   "tile_x": 126,
+   "tile_z": 406
+  },
+  "OneIsland_TreasureBeach": {
+   "tile_x": 102,
+   "tile_z": 546
+  },
+  "PalletTown": {
+   "tile_x": 60,
+   "tile_z": 260
+  },
+  "PewterCity": {
+   "tile_x": 48,
+   "tile_z": 60
+  },
+  "Route1": {
+   "tile_x": 60,
+   "tile_z": 220
+  },
+  "Route10": {
+   "tile_x": 384,
+   "tile_z": 50
+  },
+  "Route11": {
+   "tile_x": 312,
+   "tile_z": 225
+  },
+  "Route12": {
+   "tile_x": 402,
+   "tile_z": 150
+  },
+  "Route13": {
+   "tile_x": 354,
+   "tile_z": 270
+  },
+  "Route14": {
+   "tile_x": 330,
+   "tile_z": 270
+  },
+  "Route15": {
+   "tile_x": 258,
+   "tile_z": 310
+  },
+  "Route16": {
+   "tile_x": 132,
+   "tile_z": 130
+  },
+  "Route17": {
+   "tile_x": 132,
+   "tile_z": 150
+  },
+  "Route18": {
+   "tile_x": 132,
+   "tile_z": 310
+  },
+  "Route19": {
+   "tile_x": 222,
+   "tile_z": 340
+  },
+  "Route2": {
+   "tile_x": 60,
+   "tile_z": 100
+  },
+  "Route20": {
+   "tile_x": 102,
+   "tile_z": 380
+  },
+  "Route21_North": {
+   "tile_x": 60,
+   "tile_z": 280
+  },
+  "Route21_South": {
+   "tile_x": 78,
+   "tile_z": 330
+  },
+  "Route22": {
+   "tile_x": 0,
+   "tile_z": 190
+  },
+  "Route23": {
+   "tile_x": 0,
+   "tile_z": 30
+  },
+  "Route24": {
+   "tile_x": 276,
+   "tile_z": 0
+  },
+  "Route25": {
+   "tile_x": 300,
+   "tile_z": 0
+  },
+  "Route3": {
+   "tile_x": 96,
+   "tile_z": 70
+  },
+  "Route4": {
+   "tile_x": 156,
+   "tile_z": 50
+  },
+  "Route5": {
+   "tile_x": 264,
+   "tile_z": 80
+  },
+  "Route6": {
+   "tile_x": 276,
+   "tile_z": 175
+  },
+  "Route7": {
+   "tile_x": 240,
+   "tile_z": 130
+  },
+  "Route8": {
+   "tile_x": 330,
+   "tile_z": 130
+  },
+  "Route9": {
+   "tile_x": 312,
+   "tile_z": 50
+  },
+  "SaffronCity": {
+   "tile_x": 264,
+   "tile_z": 120
+  },
+  "SevenIsland": {
+   "tile_x": 204,
+   "tile_z": 446
+  },
+  "SevenIsland_SevaultCanyon": {
+   "tile_x": 216,
+   "tile_z": 592
+  },
+  "SevenIsland_SevaultCanyon_Entrance": {
+   "tile_x": 204,
+   "tile_z": 466
+  },
+  "SevenIsland_TanobyRuins": {
+   "tile_x": 246,
+   "tile_z": 592
+  },
+  "SevenIsland_TrainerTower": {
+   "tile_x": 156,
+   "tile_z": 406
+  },
+  "SixIsland": {
+   "tile_x": 0,
+   "tile_z": 632
+  },
+  "SixIsland_GreenPath": {
+   "tile_x": 0,
+   "tile_z": 698
+  },
+  "SixIsland_OutcastIsland": {
+   "tile_x": 78,
+   "tile_z": 698
+  },
+  "SixIsland_RuinValley": {
+   "tile_x": 108,
+   "tile_z": 698
+  },
+  "SixIsland_WaterPath": {
+   "tile_x": 24,
+   "tile_z": 592
+  },
+  "ThreeIsland": {
+   "tile_x": 378,
+   "tile_z": 406
+  },
+  "ThreeIsland_BondBridge": {
+   "tile_x": 282,
+   "tile_z": 406
+  },
+  "ThreeIsland_Port": {
+   "tile_x": 378,
+   "tile_z": 446
+  },
+  "TwoIsland": {
+   "tile_x": 54,
+   "tile_z": 632
+  },
+  "TwoIsland_CapeBrink": {
+   "tile_x": 78,
+   "tile_z": 592
+  },
+  "VermilionCity": {
+   "tile_x": 264,
+   "tile_z": 215
+  },
+  "ViridianCity": {
+   "tile_x": 48,
+   "tile_z": 180
+  }
  },
  "maps": {
-  "PalletTown": {"kind": "town", "floor": "town", "place": "Pallet Town", "zone": 450,
-                 "buildings": {"MAP_PALLET_TOWN_PLAYERS_HOUSE_1F": {"res": 2, "front": 20},
-                               "MAP_PALLET_TOWN_RIVALS_HOUSE": {"res": 2, "front": 20}},
-                 "signs": {}, "npcs": {}, "warps": {}},
-  "Route1": {"kind": "route", "floor": "route", "place": "Route 1", "zone": 451,
-             "buildings": {}, "signs": {}, "npcs": {}, "warps": {}},
-  "ViridianCity": {"kind": "town", "floor": "town", "place": "Viridian City", "zone": 452,
-                   "buildings": {"MAP_VIRIDIAN_CITY_POKEMON_CENTER_1F": {"res": 0, "front": 20}},
-                   "signs": {}, "npcs": {}, "warps": {}},
-  "Route2": {"kind": "route", "floor": "route", "place": "Route 2", "zone": 453,
-             "buildings": {}, "signs": {}, "npcs": {}, "warps": {}},
-  "Route22": {"kind": "route", "floor": "route", "place": "Route 22", "zone": 454,
-              "buildings": {}, "signs": {}, "npcs": {}, "warps": {}}
+  "CeladonCity": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Celadon City",
+   "zone": 455,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "CeruleanCity": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Cerulean City",
+   "zone": 456,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "CinnabarIsland": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Cinnabar Island",
+   "zone": 457,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "FiveIsland": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Five Island",
+   "zone": 458,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "FiveIsland_Meadow": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Five Island Meadow",
+   "zone": 459,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "FiveIsland_MemorialPillar": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Five Island Memorial Pillar",
+   "zone": 460,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "FiveIsland_ResortGorgeous": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Five Island Resort Gorgeous",
+   "zone": 461,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "FiveIsland_WaterLabyrinth": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Five Island Water Labyrinth",
+   "zone": 462,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "FuchsiaCity": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Fuchsia City",
+   "zone": 463,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "IndigoPlateau_Exterior": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Indigo Plateau Exterior",
+   "zone": 464,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "LavenderTown": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Lavender Town",
+   "zone": 465,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "OneIsland": {
+   "kind": "town",
+   "floor": "town",
+   "place": "One Island",
+   "zone": 466,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "OneIsland_KindleRoad": {
+   "kind": "route",
+   "floor": "route",
+   "place": "One Island Kindle Road",
+   "zone": 467,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "OneIsland_TreasureBeach": {
+   "kind": "route",
+   "floor": "route",
+   "place": "One Island Treasure Beach",
+   "zone": 468,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "PalletTown": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Pallet Town",
+   "zone": 450,
+   "buildings": {
+    "MAP_PALLET_TOWN_PLAYERS_HOUSE_1F": {
+     "res": 2,
+     "front": 20
+    },
+    "MAP_PALLET_TOWN_RIVALS_HOUSE": {
+     "res": 2,
+     "front": 20
+    }
+   },
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "PewterCity": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Pewter City",
+   "zone": 469,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route1": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 1",
+   "zone": 451,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route10": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 10",
+   "zone": 470,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route11": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 11",
+   "zone": 471,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route12": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 12",
+   "zone": 472,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route13": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 13",
+   "zone": 473,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route14": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 14",
+   "zone": 474,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route15": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 15",
+   "zone": 475,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route16": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 16",
+   "zone": 476,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route17": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 17",
+   "zone": 477,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route18": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 18",
+   "zone": 478,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route19": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 19",
+   "zone": 479,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route2": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 2",
+   "zone": 453,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route20": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 20",
+   "zone": 480,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route21_North": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route21 North",
+   "zone": 481,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route21_South": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route21 South",
+   "zone": 482,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route22": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 22",
+   "zone": 454,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route23": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 23",
+   "zone": 483,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route24": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 24",
+   "zone": 484,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route25": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 25",
+   "zone": 485,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route3": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 3",
+   "zone": 486,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route4": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 4",
+   "zone": 487,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route5": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 5",
+   "zone": 488,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route6": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 6",
+   "zone": 489,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route7": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 7",
+   "zone": 490,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route8": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 8",
+   "zone": 491,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "Route9": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Route 9",
+   "zone": 492,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "SaffronCity": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Saffron City",
+   "zone": 493,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "SevenIsland": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Seven Island",
+   "zone": 494,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "SevenIsland_SevaultCanyon": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Seven Island Sevault Canyon",
+   "zone": 495,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "SevenIsland_SevaultCanyon_Entrance": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Seven Island Sevault Canyon Entrance",
+   "zone": 496,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "SevenIsland_TanobyRuins": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Seven Island Tanoby Ruins",
+   "zone": 497,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "SevenIsland_TrainerTower": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Seven Island Trainer Tower",
+   "zone": 498,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "SixIsland": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Six Island",
+   "zone": 499,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "SixIsland_GreenPath": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Six Island Green Path",
+   "zone": 500,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "SixIsland_OutcastIsland": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Six Island Outcast Island",
+   "zone": 501,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "SixIsland_RuinValley": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Six Island Ruin Valley",
+   "zone": 502,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "SixIsland_WaterPath": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Six Island Water Path",
+   "zone": 503,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "ThreeIsland": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Three Island",
+   "zone": 504,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "ThreeIsland_BondBridge": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Three Island Bond Bridge",
+   "zone": 505,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "ThreeIsland_Port": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Three Island Port",
+   "zone": 506,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "TwoIsland": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Two Island",
+   "zone": 507,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "TwoIsland_CapeBrink": {
+   "kind": "route",
+   "floor": "route",
+   "place": "Two Island Cape Brink",
+   "zone": 508,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "VermilionCity": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Vermilion City",
+   "zone": 509,
+   "buildings": {},
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  },
+  "ViridianCity": {
+   "kind": "town",
+   "floor": "town",
+   "place": "Viridian City",
+   "zone": 452,
+   "buildings": {
+    "MAP_VIRIDIAN_CITY_POKEMON_CENTER_1F": {
+     "res": 0,
+     "front": 20
+    }
+   },
+   "signs": {},
+   "npcs": {},
+   "warps": {}
+  }
  },
- "prototype_maps": ["PalletTown", "Route1", "ViridianCity", "Route2", "Route22"],
+ "prototype_maps": [
+  "CeladonCity",
+  "CeruleanCity",
+  "CinnabarIsland",
+  "FiveIsland",
+  "FiveIsland_Meadow",
+  "FiveIsland_MemorialPillar",
+  "FiveIsland_ResortGorgeous",
+  "FiveIsland_WaterLabyrinth",
+  "FuchsiaCity",
+  "IndigoPlateau_Exterior",
+  "LavenderTown",
+  "OneIsland",
+  "OneIsland_KindleRoad",
+  "OneIsland_TreasureBeach",
+  "PalletTown",
+  "PewterCity",
+  "Route1",
+  "Route10",
+  "Route11",
+  "Route12",
+  "Route13",
+  "Route14",
+  "Route15",
+  "Route16",
+  "Route17",
+  "Route18",
+  "Route19",
+  "Route2",
+  "Route20",
+  "Route21_North",
+  "Route21_South",
+  "Route22",
+  "Route23",
+  "Route24",
+  "Route25",
+  "Route3",
+  "Route4",
+  "Route5",
+  "Route6",
+  "Route7",
+  "Route8",
+  "Route9",
+  "SaffronCity",
+  "SevenIsland",
+  "SevenIsland_SevaultCanyon",
+  "SevenIsland_SevaultCanyon_Entrance",
+  "SevenIsland_TanobyRuins",
+  "SevenIsland_TrainerTower",
+  "SixIsland",
+  "SixIsland_GreenPath",
+  "SixIsland_OutcastIsland",
+  "SixIsland_RuinValley",
+  "SixIsland_WaterPath",
+  "ThreeIsland",
+  "ThreeIsland_BondBridge",
+  "ThreeIsland_Port",
+  "TwoIsland",
+  "TwoIsland_CapeBrink",
+  "VermilionCity",
+  "ViridianCity"
+ ],
  "open_edges": {
-  "PalletTown": ["down"],
-  "Route2": ["up"],
-  "Route22": ["up"]
+  "CinnabarIsland": [
+   "up"
+  ],
+  "FiveIsland": [
+   "right",
+   "up"
+  ],
+  "FiveIsland_Meadow": [
+   "right"
+  ],
+  "FiveIsland_MemorialPillar": [
+   "left"
+  ],
+  "FiveIsland_ResortGorgeous": [
+   "down"
+  ],
+  "FiveIsland_WaterLabyrinth": [
+   "up"
+  ],
+  "OneIsland": [
+   "down",
+   "right"
+  ],
+  "PalletTown": [
+   "down"
+  ],
+  "Route21_North": [
+   "down"
+  ],
+  "Route21_South": [
+   "up"
+  ],
+  "Route23": [
+   "up"
+  ],
+  "Route5": [
+   "down"
+  ],
+  "Route6": [
+   "up"
+  ],
+  "Route7": [
+   "right"
+  ],
+  "Route8": [
+   "left"
+  ],
+  "SevenIsland": [
+   "down",
+   "up"
+  ],
+  "SevenIsland_SevaultCanyon": [
+   "down",
+   "left"
+  ],
+  "SevenIsland_SevaultCanyon_Entrance": [
+   "right"
+  ],
+  "SevenIsland_TanobyRuins": [
+   "up"
+  ],
+  "SixIsland": [
+   "right"
+  ],
+  "SixIsland_GreenPath": [
+   "right",
+   "up"
+  ],
+  "SixIsland_OutcastIsland": [
+   "down"
+  ],
+  "SixIsland_RuinValley": [
+   "right"
+  ],
+  "SixIsland_WaterPath": [
+   "left"
+  ],
+  "ThreeIsland": [
+   "down",
+   "left"
+  ],
+  "TwoIsland": [
+   "up"
+  ]
  }
 }

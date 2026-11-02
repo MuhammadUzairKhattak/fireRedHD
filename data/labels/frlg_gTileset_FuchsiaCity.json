@@ -1,0 +1,12 @@
+{
+ "_doc": "FRLG frlg:gTileset_FuchsiaCity metatile classes for the Kanto prototype maps (converter/frlg_classify.py, generated: do not edit by hand - add a behaviour rule or an OVERRIDES entry there). Behaviour-anchored classes (tall_grass/water/ledge/sand/door/sign) come from pokefirered's MB_* codes; MB_NORMAL art is hand-checked from the contact sheets. Keyed by the namespaced tileset so Hoenn's ids never apply.",
+ "frlg:gTileset_FuchsiaCity": {
+  "28a": "ledge_s",
+  "2ae": "door",
+  "2bf": "door",
+  "2d2": "door",
+  "333": "water",
+  "334": "water",
+  "335": "water"
+ }
+}

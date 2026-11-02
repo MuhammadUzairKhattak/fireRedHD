@@ -1,0 +1,32 @@
+{
+ "_doc": "FRLG frlg:gTileset_IndigoPlateau metatile classes for the Kanto prototype maps (converter/frlg_classify.py, generated: do not edit by hand - add a behaviour rule or an OVERRIDES entry there). Behaviour-anchored classes (tall_grass/water/ledge/sand/door/sign) come from pokefirered's MB_* codes; MB_NORMAL art is hand-checked from the contact sheets. Keyed by the namespaced tileset so Hoenn's ids never apply.",
+ "frlg:gTileset_IndigoPlateau": {
+  "290": "water",
+  "29a": "water",
+  "29b": "water",
+  "2a3": "water",
+  "2a5": "water",
+  "2a6": "water",
+  "2ae": "water",
+  "2af": "water",
+  "2e6": "door",
+  "316": "water",
+  "317": "water",
+  "31e": "water",
+  "31f": "water",
+  "320": "water",
+  "321": "water",
+  "323": "water",
+  "325": "water",
+  "326": "water",
+  "327": "water",
+  "328": "water",
+  "329": "water",
+  "32a": "water",
+  "32b": "water",
+  "32c": "water",
+  "32d": "water",
+  "32e": "water",
+  "32f": "water"
+ }
+}

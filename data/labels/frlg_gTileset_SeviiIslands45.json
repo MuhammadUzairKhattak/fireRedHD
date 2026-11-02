@@ -1,0 +1,26 @@
+{
+ "_doc": "FRLG frlg:gTileset_SeviiIslands45 metatile classes for the Kanto prototype maps (converter/frlg_classify.py, generated: do not edit by hand - add a behaviour rule or an OVERRIDES entry there). Behaviour-anchored classes (tall_grass/water/ledge/sand/door/sign) come from pokefirered's MB_* codes; MB_NORMAL art is hand-checked from the contact sheets. Keyed by the namespaced tileset so Hoenn's ids never apply.",
+ "frlg:gTileset_SeviiIslands45": {
+  "288": "sand",
+  "29a": "door",
+  "2c6": "water",
+  "2c7": "water",
+  "2ce": "water",
+  "2cf": "water",
+  "2d6": "water",
+  "2d7": "water",
+  "2de": "water",
+  "2df": "water",
+  "2e3": "water",
+  "2e4": "water",
+  "2e5": "water",
+  "2e6": "water",
+  "2e7": "water",
+  "2eb": "water",
+  "2ec": "water",
+  "2ed": "water",
+  "2ee": "water",
+  "2ef": "water",
+  "2f9": "door"
+ }
+}

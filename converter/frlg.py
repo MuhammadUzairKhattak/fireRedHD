@@ -47,7 +47,20 @@ class FrlgRepo(Repo):
     def tileset_dir(self, symbol):
         if not symbol.startswith(self.TILESET_PREFIX):
             raise ValueError(f'FRLG tileset is not namespaced: {symbol}')
-        return super().tileset_dir(symbol[len(self.TILESET_PREFIX):])
+        name = symbol[len(self.TILESET_PREFIX):]
+        try:
+            return super().tileset_dir(name)
+        except FileNotFoundError:
+            # pokefirered splits a trailing digit run into its own folder segment (gTileset_SeviiIslands45 ->
+            # sevii_islands_45), which gba.Repo.tileset_dir's capital-only split misses; retry with that rule so the
+            # shared Hoenn reader stays untouched (this is the Kanto adapter's own naming difference).
+            import re
+            alt = re.sub(r'(?<=[a-zA-Z])(?=\d)', '_', re.sub(r'(?<!^)(?=[A-Z])', '_', name.replace('gTileset_', ''))).lower()
+            for kind in ('primary', 'secondary'):
+                p = f'{self.root}/data/tilesets/{kind}/{alt}'
+                if os.path.isdir(p):
+                    return p
+            raise
 
 
 def load_config(path=CONFIG):

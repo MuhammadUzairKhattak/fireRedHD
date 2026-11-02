@@ -335,6 +335,13 @@ def package(out_dir=None, plan_dir=PLAN_DIR):
     put = world.make_put(placements)
     zones = {}
     for name, mp in maps.items():
+        # Kanto outdoor doors are not wired yet (each map cfg leaves 'warps' empty), so only hand world.map_events the
+        # warps this map's cfg explicitly names. A raw FireRed warp whose dest_map collides with a Hoenn INTERIORS key
+        # (e.g. Route 23 -> MAP_VICTORY_ROAD_1F) otherwise drags map_events down Hoenn's interior-door path, which reads
+        # the KANTO map out of external/pokeruby and crashes. Filtering on the cfg keeps any future Kanto-wired door and
+        # drops the rest - a Kanto-side adapter, so b2tools/world.py stays untouched (AGENTS.md).
+        mp['plan'] = dict(mp['plan'], warps=[w for w in mp['plan'].get('warps', [])
+                                              if w['dest'] in mp['cfg'].get('warps', {})])
         world.map_events(name, mp, zones, put, hgt, zone_at, wgrid)
     # a building whose map cfg names a Black 2 model (data/kanto_world.json 'buildings') is drawn by that placed model,
     # not by kanto_features' placeholder massing: mark its footprint + roof tiles so the box is suppressed under it
