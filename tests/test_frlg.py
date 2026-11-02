@@ -585,9 +585,8 @@ class KantoBuildListTest(unittest.TestCase):
     b2tools/kanto_build.sh, never editing the Hoenn path. This guards that the shipped slices stay wired into the
     Kanto build (a pure text read, so it runs on Windows)."""
 
-    # the QoL engine slices implemented so far (a5.2 escape_rope/exp_share, a5.3 kanto_trade_evos, a5.4 kanto_music);
-    # kanto_opening replaces kanto_door: a new game drops straight into Pallet Town, so the door bridge is not built
-    ENABLED = ('kanto_world', 'kanto_opening', 'kanto_escape_rope', 'exp_share', 'kanto_trade_evos', 'kanto_music')
+    # the QoL engine slices implemented so far (a5.2 escape_rope/exp_share, a5.3 kanto_trade_evos, a5.4 kanto_music)
+    ENABLED = ('kanto_world', 'kanto_door', 'kanto_escape_rope', 'exp_share', 'kanto_trade_evos', 'kanto_music')
 
     def test_qol_patches_are_in_the_kanto_build_list(self):
         script = open(os.path.join(ROOT, 'b2tools', 'kanto_build.sh')).read()
@@ -595,43 +594,6 @@ class KantoBuildListTest(unittest.TestCase):
         self.assertIsNotNone(line, 'kanto_build.sh has no build_rom.py invocation')
         for patch in self.ENABLED:
             self.assertIn(patch, line, f'{patch} is not enabled in the Kanto build list')
-
-    def test_door_bridge_is_not_built_alongside_direct_entry(self):
-        """kanto_opening starts the player ON Pallet Town's fly point; kanto_door's fly-point 'way home' warp would
-        sit under that spawn (a fresh spawn onto a warp fires it, looping 450<->428). Only one may be in the build."""
-        line = next(l for l in open(os.path.join(ROOT, 'b2tools', 'kanto_build.sh')) if 'build_rom.py' in l)
-        self.assertNotIn('kanto_door', line, 'kanto_door would put a warp under the kanto_opening spawn')
-
-
-class KantoOpeningTest(unittest.TestCase):
-    """b2tools/patches/kanto_opening.py drops a new game straight into Pallet Town (no house, no door) and keeps the
-    player visible there. This pins the two levers statically so a wrong constant silently shipping an invisible or
-    misplaced player is caught: the arm9 start-zone literal offset must match patches/opening.py's, and the ov035
-    first-map edit must turn SetActorFlag(actor, 4) (hidden) into SetActorFlag(actor, 0) (no flag). Pure reads."""
-
-    def setUp(self):
-        import importlib.util
-        for d in ('b2tools', 'patches'):
-            self.assertIn(d, os.path.join(ROOT, d))
-        p = os.path.join(ROOT, 'b2tools', 'patches', 'kanto_opening.py')
-        spec = importlib.util.spec_from_file_location('kanto_opening', p)
-        self.ko = importlib.util.module_from_spec(spec); spec.loader.exec_module(self.ko)
-
-    def test_start_zone_offset_matches_opening_patch(self):
-        import importlib.util
-        op = os.path.join(ROOT, 'b2tools', 'patches', 'opening.py')
-        spec = importlib.util.spec_from_file_location('opening', op)
-        opening = importlib.util.module_from_spec(spec); spec.loader.exec_module(opening)
-        self.assertEqual(self.ko.NEW_GAME_ZONE, opening.NEW_GAME_ZONE,
-                         'the new-game zone literal must live at the same arm9 offset opening.py proved')
-        self.assertEqual(self.ko.VANILLA, opening.VANILLA, 'the pristine start zone must be Aspertia 427')
-        self.assertEqual(self.ko.PALLET_TOWN, 450, 'must start in Pallet Town, the slot kanto_world installs')
-
-    def test_hide_instruction_is_the_flag_4_store(self):
-        self.assertEqual(self.ko.HIDE_FLAG_AT, 0x0217cafa - 0x0217c940, 'the ov035 hide-instruction file offset')
-        # Thumb 'movs r1, #imm': the 8-bit immediate encodes in the low byte, r1 in the register field (0x2100 | imm)
-        self.assertEqual(int.from_bytes(bytes.fromhex(self.ko.HIDDEN), 'little'), 0x2104, "HIDDEN must be 'movs r1, #4' (hidden)")
-        self.assertEqual(int.from_bytes(bytes.fromhex(self.ko.VISIBLE), 'little'), 0x2100, "VISIBLE must be 'movs r1, #0' (no flag)")
 
 
 class KantoMusicDataTest(unittest.TestCase):
