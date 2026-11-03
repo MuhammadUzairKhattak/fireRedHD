@@ -617,12 +617,32 @@ class KantoBuildingGeometryTest(unittest.TestCase):
         # collision defers to build_cell's default, so a (solid) building tile stays a wall
         self.assertIsNone(kanto_features.collision('building', grid[(1, 1)], self._cell(grid)))
 
-    def test_door_tile_fills_the_footprint(self):
+    def test_door_tile_is_a_visible_open_doorway_not_a_box(self):
+        """A warp 'door' tile renders as a framed opening (posts + lintel in the wall material) and NOT a roofed
+        massing box: it draws the wall material so the entrance is visible, but draws no roof slab (iwa01), which is
+        how a filled building box is distinguished. The old box-fill made the entrance rooms' far-side exit look like
+        a plain wall tile - "no exit on the opposite end"."""
         from dae import Model
         from terrain import kanto_features
         m = Model('test')
-        kanto_features.draw(m, self._cell({(3, 3): ('ViridianCity', 'door', False)}))
-        self.assertIn('t02_kabe01', m.tris, 'a door tile left a hole in the building instead of closing it')
+        kanto_features.draw(m, self._cell({(3, 3): ('ViridianForest_NorthEntrance', 'door', False)}))
+        self.assertIn('t02_kabe01', m.tris, 'a door tile drew no geometry: the entrance is invisible again')
+        self.assertNotIn('iwa01', m.tris, 'a door tile drew a roof slab: it is a filled box, not an open doorway')
+
+    def test_building_does_not_wall_over_its_door(self):
+        """A building massing draws walls on its outer edges only, and a neighbouring 'door' counts as part of the
+        footprint, so no wall face closes the doorway: the building+door together must have exactly one wall face (4
+        tris) FEWER than the two drawn in isolation, proving the shared boundary is left open."""
+        from dae import Model
+        from terrain import kanto_features
+        wall = lambda grid: (lambda m: (kanto_features.draw(m, self._cell(grid)),
+                                         len(m.tris.get('t02_kabe01', [])))[1])(Model('t'))
+        alone_bld = wall({(3, 3): ('ViridianCity', 'building', False)})
+        alone_door = wall({(3, 4): ('ViridianCity', 'door', False)})
+        together = wall({(3, 3): ('ViridianCity', 'building', False),
+                         (3, 4): ('ViridianCity', 'door', False)})
+        self.assertEqual(together, alone_bld + alone_door - 4,
+                         'a building walled over its own doorway (shared face drawn) instead of leaving it open')
 
     def test_sign_draws_a_visible_signpost(self):
         from dae import Model
