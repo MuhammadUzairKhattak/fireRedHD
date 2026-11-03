@@ -644,6 +644,21 @@ class KantoBuildingGeometryTest(unittest.TestCase):
         self.assertEqual(together, alone_bld + alone_door - 4,
                          'a building walled over its own doorway (shared face drawn) instead of leaving it open')
 
+    def test_walkable_door_tile_is_floor_not_a_wall(self):
+        """A warp 'door' tile the plan marks walkable collides as plain floor (bc.WALK), so the player steps onto it
+        and an arriving warp lands on it cleanly - build_cell forces the 'door' class solid, which is what made the
+        Viridian Forest entrance rooms' far-side exit un-enterable (the forest landing tile was a solid door). A
+        non-walkable door (a real wall doorway) and every building/sign tile keep build_cell's default (None -> solid)."""
+        import build_chunk as bc
+        from terrain import kanto_features
+        cell = self._cell({(3, 3): ('ViridianForest', 'door', True)})
+        rec, ch = kanto_features.collision('door', ('ViridianForest', 'door', True), cell)
+        self.assertEqual(rec, bc.WALK, 'a walkable warp door must be floor you step onto / land on, not a wall')
+        self.assertEqual(ch, '.')
+        self.assertIsNone(kanto_features.collision('door', ('ViridianForest', 'door', False), cell),
+                         'a non-walkable door (a wall doorway) must stay solid')
+        self.assertIsNone(kanto_features.collision('building', ('ViridianCity', 'building', False), cell))
+
     def test_sign_draws_a_visible_signpost(self):
         from dae import Model
         from terrain import kanto_features

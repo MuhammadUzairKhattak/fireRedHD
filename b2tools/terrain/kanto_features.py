@@ -10,7 +10,7 @@ on the outer edge only, so no per-tile seams), a raised roof slab in a distinct 
 box-filled: it gets a recessed framed opening (side posts + lintel, centre open) facing the walkable approach, so the
 warp you step into is visible as an entrance rather than a featureless wall tile - the old folded-in box made the
 Viridian Forest entrance rooms' far-side exit indistinguishable from the perimeter ("no exit on the opposite end"). The
-door tile stays solid in collision (build_cell never walks 'door'), so walking into the opening still fires the warp.
+door tile is walkable in collision when the plan says so (see collision()), so you step onto it and land on it cleanly.
 Massing walls still treat a neighbouring door as part of the footprint (FP_EDGE), so a house draws no wall over its own
  doorway. It also owns 'sign': a sign is solid in the plan but
 had no model, so it rendered as an invisible wall (world.py's rule is that no solid tile is ever invisible) - here each
@@ -108,7 +108,7 @@ def draw(m, cell):
                     _quad(m, MAT, body[s])                            # body wall on the outer edge only (no interior seams)
                     _quad(m, ROOF_MAT, roof[s])                       # parapet rim raising the roof edge
             elif c == 'door':
-                # the walkable side the player comes from is the doorway front (the door tile itself is solid).
+                # the walkable side the player comes from is the doorway front (a warp door is stepped onto: see collision).
                 front = ('s' if walk(tx, tz + 1) else 'n' if walk(tx, tz - 1) else
                          'w' if walk(tx + 1, tz) else 'e' if walk(tx - 1, tz) else None)
                 _doorway(m, bc, tx, tz, front)
@@ -117,6 +117,13 @@ def draw(m, cell):
 
 
 def collision(cls, tile, cell):
-    """None: keep build_cell's default. A building/door/sign tile is already solid in the plan (not walkable), so it
-    collides as a wall; this module only makes it visible."""
+    """A warp 'door' tile the plan marks walkable is stepped ONTO (Black 2's dir = the way you walk in, and the tile
+    you ARRIVE on when another warp lands here must be walkable too), so it collides as plain floor, not a wall.
+    build_cell forces the 'door' class solid (its walkable test excludes 'door'), which is what made the Viridian
+    Forest entrance rooms' far-side exit un-enterable: the room's door fired but the forest landing tile (5,9) was a
+    solid 'door', so the player was warped onto a wall and blocked. Honoring the plan's walkability here (a Kanto-owned
+    hook, no Hoenn edit) makes every warp tile floor you can step onto and land on. Any other tile (or a non-walkable
+    door) returns None: keep build_cell's default, so a real wall/sign/roof stays solid."""
+    if cls == 'door' and tile[2]:
+        return (cell.bc.WALK, '.')
     return None
